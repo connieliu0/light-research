@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text + References</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      background: #fafafa;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .panel {
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .left-panel {
+      flex: 1;
+      border-right: 1px solid #e0e0e0;
+      background: #fff;
+    }
+
+    .middle-panel {
+      width: 0;
+      overflow: hidden;
+      transition: width 0.2s ease, padding 0.2s ease;
+      background: #f5f5f5;
+      border-right: 1px solid #e0e0e0;
+      padding: 0;
+    }
+
+    .middle-panel > * {
+      opacity: 0;
+      transition: opacity 0.1s ease;
+    }
+
+    .middle-panel.expanded {
+      width: 280px;
+      padding: 20px;
+    }
+
+    .middle-panel.expanded > * {
+      opacity: 1;
+    }
+
+    .right-panel {
+      width: 300px;
+      background: #fff;
+    }
+
+    .panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    /* Text Lines */
+    .line {
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #fafafa;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.15s;
+    }
+
+    .line:hover {
+      background: #f0f0f0;
+    }
+
+    .line.selected {
+      background: #e8f4fc;
+      outline: 2px solid #2196F3;
+    }
+
+    .line.drop-attach {
+      background: #e3f2fd;
+      outline: 2px dashed #2196F3;
+    }
+
+    .line.drop-attach::after {
+      content: '+ Attach ref';
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: #1976D2;
+      background: #bbdefb;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .line.drop-insert {
+      margin-bottom: 24px;
+    }
+
+    .line.drop-insert::after {
+      content: '+ Insert line below';
+      position: absolute;
+      bottom: -20px;
+      left: 12px;
+      font-size: 11px;
+      color: #1976D2;
+      background: #bbdefb;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .line-text {
+      min-height: 20px;
+      outline: none;
+    }
+
+    .line-text:empty:before {
+      content: 'Type something...';
+      color: #999;
+    }
+
+    .line-refs-indicator {
+      position: absolute;
+      top: 8px;
+      right: 32px;
+      font-size: 11px;
+      color: #2196F3;
+      background: #e3f2fd;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+
+    .line-delete {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 18px;
+      height: 18px;
+      border: none;
+      background: #e0e0e0;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 16px;
+      text-align: center;
+      color: #999;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .line-delete:hover {
+      background: #f44336;
+      color: #fff;
+    }
+
+    .add-line-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px;
+      color: #666;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .add-line-btn:hover {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    /* References */
+    .reference {
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #fafafa;
+      border-radius: 6px;
+      cursor: grab;
+      transition: background 0.15s, transform 0.15s;
+      position: relative;
+    }
+
+    .reference:hover {
+      background: #f0f0f0;
+    }
+
+    .reference-delete {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 20px;
+      height: 20px;
+      border: none;
+      background: #e0e0e0;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 18px;
+      text-align: center;
+      color: #999;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .reference-delete:hover {
+      background: #f44336;
+      color: #fff;
+    }
+
+    .reference.dragging {
+      opacity: 0.5;
+      transform: scale(0.98);
+    }
+
+    .reference-content {
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .reference-type {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .reference-image {
+      max-width: 100%;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+
+    .reference-url {
+      color: #2196F3;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .reference-url:hover {
+      text-decoration: underline;
+    }
+
+    /* Middle panel refs */
+    .attached-ref {
+      padding: 10px;
+      padding-right: 30px;
+      margin-bottom: 6px;
+      background: #fff;
+      border-radius: 4px;
+      font-size: 13px;
+      position: relative;
+    }
+
+    .attached-ref-delete {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 18px;
+      height: 18px;
+      border: none;
+      background: #e0e0e0;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 16px;
+      text-align: center;
+      color: #999;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .attached-ref-delete:hover {
+      background: #f44336;
+      color: #fff;
+    }
+
+    .no-refs-msg {
+      color: #999;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    /* Actions */
+    .action-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+
+    .action-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .paste-area {
+      padding: 16px;
+      border: 2px dashed #ddd;
+      border-radius: 6px;
+      text-align: center;
+      color: #999;
+      font-size: 13px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .paste-area:hover, .paste-area.dragover {
+      border-color: #2196F3;
+      background: #e3f2fd;
+    }
+
+    /* Inline reference in text */
+    .inline-ref {
+      background: #e3f2fd;
+      padding: 1px 4px;
+      border-radius: 3px;
+      color: #1976D2;
+      cursor: pointer;
+    }
+
+    .inline-ref:hover {
+      background: #bbdefb;
+    }
+
+    /* Arena import modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      padding: 24px;
+      border-radius: 8px;
+      width: 400px;
+      max-width: 90%;
+    }
+
+    .modal h3 {
+      margin-bottom: 16px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .modal-actions button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .modal-actions .cancel {
+      background: #f0f0f0;
+    }
+
+    .modal-actions .confirm {
+      background: #2196F3;
+      color: #fff;
+    }
+
+    .loading {
+      color: #999;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="panel left-panel">
+      <div class="panel-title">Text</div>
+      <div id="lines-container"></div>
+      <div class="add-line-btn" onclick="addLine()">+ Add line</div>
+    </div>
+
+    <div class="panel middle-panel" id="middle-panel">
+      <div class="panel-title" id="middle-panel-title">Attached References</div>
+      <div id="attached-refs"></div>
+    </div>
+
+    <div class="panel right-panel">
+      <div class="panel-title">References</div>
+      <div class="paste-area" id="paste-area" onclick="handlePasteClick()">
+        Click to paste or drop content here
+      </div>
+      <div id="refs-container"></div>
+      <button class="action-btn" onclick="showArenaModal()">Import from Are.na</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="arena-modal">
+    <div class="modal">
+      <h3>Import from Are.na</h3>
+      <input type="text" id="arena-channel" placeholder="Channel slug (e.g., my-channel-name)">
+      <div class="modal-actions">
+        <button class="cancel" onclick="hideArenaModal()">Cancel</button>
+        <button class="confirm" onclick="importArena()">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // IndexedDB setup
+    const DB_NAME = 'textRefsDB';
+    const DB_VERSION = 1;
+    let db;
+
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          db = request.result;
+          resolve(db);
+        };
+
+        request.onupgradeneeded = (e) => {
+          const database = e.target.result;
+          if (!database.objectStoreNames.contains('data')) {
+            database.createObjectStore('data', { keyPath: 'id' });
+          }
+        };
+      });
+    }
+
+    async function saveData() {
+      const tx = db.transaction('data', 'readwrite');
+      const store = tx.objectStore('data');
+      await store.put({ id: 'main', lines: appState.lines, references: appState.references });
+    }
+
+    async function loadData() {
+      return new Promise((resolve) => {
+        const tx = db.transaction('data', 'readonly');
+        const store = tx.objectStore('data');
+        const request = store.get('main');
+        request.onsuccess = () => {
+          if (request.result) {
+            resolve(request.result);
+          } else {
+            resolve({ lines: [], references: [] });
+          }
+        };
+        request.onerror = () => resolve({ lines: [], references: [] });
+      });
+    }
+
+    // App State
+    let appState = {
+      lines: [],
+      references: [],
+      selectedLineId: null
+    };
+
+    function uuid() {
+      return crypto.randomUUID();
+    }
+
+    function cleanLinePrefix(text) {
+      // Remove common list prefixes: "- ", "* ", "1. ", "2) ", etc.
+      return text.replace(/^(\s*[-*•]\s*|\s*\d+[.)]\s*)/, '');
+    }
+
+    // Rendering
+    function renderLines() {
+      const container = document.getElementById('lines-container');
+      container.innerHTML = '';
+
+      appState.lines.forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'line' + (line.id === appState.selectedLineId ? ' selected' : '');
+        div.dataset.lineId = line.id;
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'line-text';
+        textDiv.contentEditable = true;
+        textDiv.innerHTML = line.text;
+        textDiv.oninput = () => {
+          line.text = textDiv.innerHTML;
+          saveData();
+        };
+        textDiv.onkeydown = (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const idx = appState.lines.findIndex(l => l.id === line.id);
+            const newLine = {
+              id: uuid(),
+              text: '',
+              referenceIds: []
+            };
+            appState.lines.splice(idx + 1, 0, newLine);
+            saveData();
+            renderLines();
+            // Focus the new line
+            setTimeout(() => {
+              const allLines = document.querySelectorAll('.line-text');
+              if (allLines[idx + 1]) {
+                allLines[idx + 1].focus();
+              }
+            }, 10);
+          }
+        };
+        textDiv.onpaste = (e) => {
+          const text = e.clipboardData.getData('text');
+          const lines = text.split(/\r?\n/).filter(l => l.trim()).map(cleanLinePrefix);
+
+          if (lines.length > 1) {
+            e.preventDefault();
+            const idx = appState.lines.findIndex(l => l.id === line.id);
+
+            // Put first line in current text box
+            line.text = (line.text || '') + lines[0];
+
+            // Create new lines for the rest
+            const newLines = lines.slice(1).map(text => ({
+              id: uuid(),
+              text: text,
+              referenceIds: []
+            }));
+
+            appState.lines.splice(idx + 1, 0, ...newLines);
+            saveData();
+            renderLines();
+
+            // Focus the last new line
+            setTimeout(() => {
+              const allLines = document.querySelectorAll('.line-text');
+              if (allLines[idx + newLines.length]) {
+                allLines[idx + newLines.length].focus();
+              }
+            }, 10);
+          }
+        };
+
+        div.appendChild(textDiv);
+
+        if (line.referenceIds && line.referenceIds.length > 0) {
+          const indicator = document.createElement('span');
+          indicator.className = 'line-refs-indicator';
+          indicator.textContent = line.referenceIds.length + ' ref' + (line.referenceIds.length > 1 ? 's' : '');
+          div.appendChild(indicator);
+        }
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'line-delete';
+        deleteBtn.textContent = '×';
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteLine(line.id);
+        };
+        div.appendChild(deleteBtn);
+
+        // Click to select and show refs
+        div.onclick = (e) => {
+          if (e.target.classList.contains('line-text')) return;
+          selectLine(line.id);
+        };
+        textDiv.onclick = () => {
+          selectLine(line.id, true);
+        };
+
+        // Drop zones
+        div.ondragover = (e) => {
+          e.preventDefault();
+          const rect = div.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+          div.classList.remove('drop-attach', 'drop-insert');
+          if (e.clientY < midY) {
+            div.classList.add('drop-attach');
+          } else {
+            div.classList.add('drop-insert');
+          }
+        };
+
+        div.ondragleave = () => {
+          div.classList.remove('drop-attach', 'drop-insert');
+        };
+
+        div.ondrop = (e) => {
+          e.preventDefault();
+          div.classList.remove('drop-attach', 'drop-insert');
+
+          const refId = e.dataTransfer.getData('text/plain');
+          if (!refId) return;
+
+          const rect = div.getBoundingClientRect();
+          const midY = rect.top + rect.height / 2;
+
+          if (e.clientY < midY) {
+            // Top half: attach reference to this line
+            if (!line.referenceIds) line.referenceIds = [];
+            if (!line.referenceIds.includes(refId)) {
+              line.referenceIds.push(refId);
+            }
+          } else {
+            // Bottom half: insert as new line below
+            const ref = appState.references.find(r => r.id === refId);
+            if (ref) {
+              const newLine = {
+                id: uuid(),
+                text: formatRefAsText(ref),
+                referenceIds: [refId]
+              };
+              const idx = appState.lines.findIndex(l => l.id === line.id);
+              appState.lines.splice(idx + 1, 0, newLine);
+            }
+          }
+
+          saveData();
+          renderLines();
+          if (appState.selectedLineId === line.id) {
+            renderAttachedRefs();
+          }
+        };
+
+        container.appendChild(div);
+      });
+    }
+
+    function formatRefAsText(ref) {
+      if (ref.type === 'url') {
+        return `<a href="${ref.content}" class="inline-ref" target="_blank">${ref.content}</a>`;
+      } else if (ref.type === 'image') {
+        return `<span class="inline-ref">[image]</span>`;
+      }
+      return ref.content;
+    }
+
+    function renderReferences() {
+      const container = document.getElementById('refs-container');
+      container.innerHTML = '';
+
+      appState.references.forEach(ref => {
+        const div = document.createElement('div');
+        div.className = 'reference';
+        div.draggable = true;
+        div.dataset.refId = ref.id;
+
+        if (ref.type === 'image') {
+          const img = document.createElement('img');
+          img.src = ref.content;
+          img.className = 'reference-image';
+          div.appendChild(img);
+        } else if (ref.type === 'url') {
+          const a = document.createElement('a');
+          a.href = ref.content;
+          a.className = 'reference-url';
+          a.textContent = ref.content;
+          a.target = '_blank';
+          a.onclick = (e) => e.stopPropagation();
+          div.appendChild(a);
+        } else {
+          const content = document.createElement('div');
+          content.className = 'reference-content';
+          content.textContent = ref.content.length > 100 ? ref.content.slice(0, 100) + '...' : ref.content;
+          div.appendChild(content);
+        }
+
+        const typeLabel = document.createElement('div');
+        typeLabel.className = 'reference-type';
+        typeLabel.textContent = ref.type;
+        div.appendChild(typeLabel);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'reference-delete';
+        deleteBtn.textContent = '×';
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteReference(ref.id);
+        };
+        div.appendChild(deleteBtn);
+
+        div.ondragstart = (e) => {
+          e.dataTransfer.setData('text/plain', ref.id);
+          div.classList.add('dragging');
+        };
+
+        div.ondragend = () => {
+          div.classList.remove('dragging');
+        };
+
+        container.appendChild(div);
+      });
+    }
+
+    function renderAttachedRefs() {
+      const container = document.getElementById('attached-refs');
+      const title = document.getElementById('middle-panel-title');
+      container.innerHTML = '';
+
+      const line = appState.lines.find(l => l.id === appState.selectedLineId);
+      if (!line || !line.referenceIds || line.referenceIds.length === 0) {
+        title.style.display = 'none';
+        return;
+      }
+      title.style.display = '';
+
+      line.referenceIds.forEach(refId => {
+        const ref = appState.references.find(r => r.id === refId);
+        if (!ref) return;
+
+        const div = document.createElement('div');
+        div.className = 'attached-ref';
+
+        if (ref.type === 'image') {
+          div.innerHTML = `<img src="${ref.content}" style="max-width:100%;border-radius:4px;">`;
+        } else if (ref.type === 'url') {
+          div.innerHTML = `<a href="${ref.content}" target="_blank" class="reference-url">${ref.content}</a>`;
+        } else {
+          div.textContent = ref.content.length > 80 ? ref.content.slice(0, 80) + '...' : ref.content;
+        }
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'attached-ref-delete';
+        deleteBtn.textContent = '×';
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          detachReference(line.id, refId);
+        };
+        div.appendChild(deleteBtn);
+
+        container.appendChild(div);
+      });
+    }
+
+    function detachReference(lineId, refId) {
+      const line = appState.lines.find(l => l.id === lineId);
+      if (line && line.referenceIds) {
+        line.referenceIds = line.referenceIds.filter(id => id !== refId);
+      }
+      saveData();
+      renderLines();
+      renderAttachedRefs();
+    }
+
+    function insertRefIntoLine(lineId, ref) {
+      const line = appState.lines.find(l => l.id === lineId);
+      if (!line) return;
+
+      const insertion = formatRefAsText(ref);
+      line.text = line.text + ' ' + insertion;
+      saveData();
+      renderLines();
+    }
+
+    function selectLine(lineId, preserveFocus = false) {
+      const changed = appState.selectedLineId !== lineId;
+      appState.selectedLineId = lineId;
+
+      if (changed) {
+        // Update selection classes without full re-render if preserving focus
+        if (preserveFocus && lineId) {
+          document.querySelectorAll('.line').forEach(el => {
+            el.classList.toggle('selected', el.dataset.lineId === lineId);
+          });
+        } else {
+          renderLines();
+        }
+      }
+
+      const middlePanel = document.getElementById('middle-panel');
+      const line = appState.lines.find(l => l.id === lineId);
+      const hasRefs = line && line.referenceIds && line.referenceIds.length > 0;
+
+      if (lineId && hasRefs) {
+        middlePanel.classList.add('expanded');
+        renderAttachedRefs();
+      } else {
+        middlePanel.classList.remove('expanded');
+      }
+    }
+
+    // Actions
+    function addLine() {
+      const newLine = {
+        id: uuid(),
+        text: '',
+        referenceIds: []
+      };
+      appState.lines.push(newLine);
+      saveData();
+      renderLines();
+
+      // Focus the new line
+      setTimeout(() => {
+        const lines = document.querySelectorAll('.line-text');
+        if (lines.length > 0) {
+          lines[lines.length - 1].focus();
+        }
+      }, 10);
+    }
+
+    function addReference(content, type = 'text') {
+      const newRef = {
+        id: uuid(),
+        content: content,
+        type: type
+      };
+      appState.references.push(newRef);
+      saveData();
+      renderReferences();
+    }
+
+    function deleteReference(refId) {
+      // Remove from references array
+      appState.references = appState.references.filter(r => r.id !== refId);
+      // Remove from all lines' referenceIds
+      appState.lines.forEach(line => {
+        if (line.referenceIds) {
+          line.referenceIds = line.referenceIds.filter(id => id !== refId);
+        }
+      });
+      saveData();
+      renderReferences();
+      renderLines();
+      if (appState.selectedLineId) {
+        renderAttachedRefs();
+      }
+    }
+
+    function deleteLine(lineId) {
+      appState.lines = appState.lines.filter(l => l.id !== lineId);
+      if (appState.selectedLineId === lineId) {
+        appState.selectedLineId = null;
+        document.getElementById('middle-panel').classList.remove('expanded');
+      }
+      saveData();
+      renderLines();
+    }
+
+    function detectRefType(content) {
+      if (/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(content)) {
+        return 'image';
+      }
+      if (/^https?:\/\//i.test(content)) {
+        return 'url';
+      }
+      return 'text';
+    }
+
+    // Paste handling
+    function handlePasteClick() {
+      navigator.clipboard.readText().then(text => {
+        if (text && text.trim()) {
+          const type = detectRefType(text.trim());
+          addReference(text.trim(), type);
+        }
+      }).catch(() => {
+        // Fallback: prompt for text
+        const text = prompt('Paste your reference text:');
+        if (text && text.trim()) {
+          const type = detectRefType(text.trim());
+          addReference(text.trim(), type);
+        }
+      });
+    }
+
+    // Paste area drag/drop for files
+    const pasteArea = document.getElementById('paste-area');
+    pasteArea.ondragover = (e) => {
+      e.preventDefault();
+      pasteArea.classList.add('dragover');
+    };
+    pasteArea.ondragleave = () => {
+      pasteArea.classList.remove('dragover');
+    };
+    pasteArea.ondrop = (e) => {
+      e.preventDefault();
+      pasteArea.classList.remove('dragover');
+
+      const text = e.dataTransfer.getData('text');
+      if (text) {
+        const type = detectRefType(text.trim());
+        addReference(text.trim(), type);
+        return;
+      }
+
+      // Handle files
+      const files = e.dataTransfer.files;
+      for (const file of files) {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            addReference(evt.target.result, 'image');
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    };
+
+    // Global paste handler
+    document.addEventListener('paste', (e) => {
+      // Only handle if not focused on editable
+      if (document.activeElement.contentEditable === 'true') return;
+
+      const text = e.clipboardData.getData('text');
+      if (text) {
+        const type = detectRefType(text.trim());
+        addReference(text.trim(), type);
+        return;
+      }
+
+      const files = e.clipboardData.files;
+      for (const file of files) {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            addReference(evt.target.result, 'image');
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+
+    // Are.na import
+    function showArenaModal() {
+      document.getElementById('arena-modal').classList.add('visible');
+      document.getElementById('arena-channel').focus();
+    }
+
+    function hideArenaModal() {
+      document.getElementById('arena-modal').classList.remove('visible');
+      document.getElementById('arena-channel').value = '';
+    }
+
+    async function importArena() {
+      const channelInput = document.getElementById('arena-channel');
+      const slug = channelInput.value.trim();
+      if (!slug) return;
+
+      const confirmBtn = document.querySelector('#arena-modal .confirm');
+      confirmBtn.textContent = 'Importing...';
+      confirmBtn.disabled = true;
+
+      try {
+        const response = await fetch(`https://api.are.na/v2/channels/${slug}?per=100`);
+        if (!response.ok) throw new Error('Channel not found');
+
+        const data = await response.json();
+        const blocks = data.contents || [];
+
+        for (const block of blocks) {
+          let content, type;
+
+          if (block.class === 'Image') {
+            content = block.image?.display?.url || block.image?.original?.url;
+            type = 'image';
+          } else if (block.class === 'Link') {
+            content = block.source?.url || block.title;
+            type = 'url';
+          } else if (block.class === 'Text') {
+            content = block.content;
+            type = 'text';
+          } else if (block.class === 'Attachment') {
+            content = block.attachment?.url || block.title;
+            type = 'url';
+          } else {
+            content = block.title || block.content || 'Unknown block';
+            type = 'text';
+          }
+
+          if (content) {
+            addReference(content, type);
+          }
+        }
+
+        hideArenaModal();
+      } catch (err) {
+        alert('Error importing channel: ' + err.message);
+      } finally {
+        confirmBtn.textContent = 'Import';
+        confirmBtn.disabled = false;
+      }
+    }
+
+    // Handle Enter in arena input
+    document.getElementById('arena-channel').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        importArena();
+      } else if (e.key === 'Escape') {
+        hideArenaModal();
+      }
+    });
+
+    // Click outside to deselect line
+    document.querySelector('.left-panel').addEventListener('click', (e) => {
+      if (e.target.classList.contains('left-panel')) {
+        selectLine(null);
+      }
+    });
+
+    // Paste multi-line content into left panel
+    document.querySelector('.left-panel').addEventListener('paste', (e) => {
+      // Only handle if not focused on a text line
+      if (document.activeElement.classList.contains('line-text')) return;
+
+      const text = e.clipboardData.getData('text');
+      if (!text) return;
+
+      e.preventDefault();
+      const lines = text.split(/\r?\n/).filter(l => l.trim()).map(cleanLinePrefix);
+
+      const newLines = lines.map(text => ({
+        id: uuid(),
+        text: text,
+        referenceIds: []
+      }));
+
+      appState.lines.push(...newLines);
+      saveData();
+      renderLines();
+    });
+
+    // Init
+    async function init() {
+      await initDB();
+      const data = await loadData();
+      appState.lines = data.lines || [];
+      appState.references = data.references || [];
+      renderLines();
+      renderReferences();
+    }
+
+    init();
+  </script>
+</body>
+</html>
