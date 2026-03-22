@@ -87,7 +87,7 @@
 
     /* Text Lines */
     .line {
-      padding: 8px 6px;
+      padding: 7.4px 6px;
       border-bottom: 2px dotted #ddd;
       cursor: text;
       position: relative;
@@ -243,6 +243,7 @@
 
     .reference-content {
       flex: 1;
+      min-width: 0;
       font-size: 14px;
       line-height: 1.4;
       white-space: nowrap;
@@ -252,6 +253,7 @@
 
     .reference:hover .reference-content {
       white-space: normal;
+      overflow: hidden;
       overflow: visible;
     }
 
@@ -493,11 +495,15 @@
     </div>
 
     <div class="panel right-panel">
-      <div class="panel-title">References  
-        <button class="action-btn" onclick="showArenaModal()">**</button>
-        <button class="action-btn" onclick="clearAllReferences()">Ø</button>
+      <div class="panel-title">
+        <span>References</span>
+        <span style="display:flex; gap:8px; margin-left:auto;">
+          <button onclick="showArenaModal()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">**</button>
+          <button onclick="clearAllReferences()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">Ø</button>
+        </span>
       </div>
-      <div class="add-line-btn" style="border-bottom: 2px dotted #ddd;" onclick="handlePasteClick()">+ Add reference</div>
+      <div id="add-ref-btn" class="add-line-btn" style="border-bottom: 2px dotted #ddd;" onclick="showRefInput()">+ Add reference</div>
+      <input id="add-ref-input" type="text" placeholder="Type or paste a reference..." style="display:none; width:100%; padding:8px 20px; border:none; border-bottom:2px dotted #ddd; outline:none; font-family:inherit; font-size:14px; color:#333; background:none; box-sizing:border-box;">
       <div id="refs-container"></div>
      
     </div>
@@ -806,12 +812,16 @@
       const container = document.getElementById('refs-container');
       container.innerHTML = '';
 
-      getCurrentSession().references.forEach(ref => {
+      const attachedIds = new Set();
+      getCurrentSession().lines.forEach(line => {
+        (line.referenceIds || []).forEach(id => attachedIds.add(id));
+      });
+
+      getCurrentSession().references.filter(ref => !attachedIds.has(ref.id)).forEach(ref => {
         const div = document.createElement('div');
         div.className = 'reference';
-        div.draggable = true;
         div.dataset.refId = ref.id;
-
+        div.draggable = true;
         const contentDiv = document.createElement('div');
         contentDiv.className = 'reference-content';
 
@@ -873,6 +883,12 @@
 
         const div = document.createElement('div');
         div.className = 'attached-ref';
+        div.draggable = true;
+        div.ondragstart = (e) => {
+          e.dataTransfer.setData('application/attached-ref', JSON.stringify({ refId, lineId: line.id }));
+          setTimeout(() => div.style.opacity = '0.4', 0);
+        };
+        div.ondragend = () => { div.style.opacity = ''; };
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'attached-ref-content';
@@ -966,13 +982,51 @@
       }, 10);
     }
 
+    function showRefInput() {
+      const btn = document.getElementById('add-ref-btn');
+      const input = document.getElementById('add-ref-input');
+      btn.style.display = 'none';
+      input.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+
+    function hideRefInput() {
+      const btn = document.getElementById('add-ref-btn');
+      const input = document.getElementById('add-ref-input');
+      input.style.display = 'none';
+      btn.style.display = '';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('add-ref-input');
+      let submitted = false;
+      input.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          submitted = true;
+          const val = input.value.trim();
+          if (val) addReference(val, detectRefType(val));
+          hideRefInput();
+        } else if (e.key === 'Escape') {
+          submitted = true;
+          hideRefInput();
+        }
+      };
+      input.onblur = () => {
+        if (submitted) { submitted = false; return; }
+        const val = input.value.trim();
+        if (val) addReference(val, detectRefType(val));
+        hideRefInput();
+      };
+    });
+
     function addReference(content, type = 'text') {
       const newRef = {
         id: uuid(),
         content: content,
         type: type
       };
-      getCurrentSession().references.push(newRef);
+      getCurrentSession().references.unshift(newRef);
       saveData();
       renderReferences();
     }
@@ -1034,14 +1088,7 @@
           const type = detectRefType(text.trim());
           addReference(text.trim(), type);
         }
-      }).catch(() => {
-        // Fallback: prompt for text
-        const text = prompt('Paste your reference text:');
-        if (text && text.trim()) {
-          const type = detectRefType(text.trim());
-          addReference(text.trim(), type);
-        }
-      });
+      }).catch(() => {});
     }
 
     // Paste area drag/drop for files
@@ -1081,8 +1128,9 @@
 
     // Global paste handler
     document.addEventListener('paste', (e) => {
-      // Only handle if not focused on editable
+      // Only handle if not focused on editable or the ref input
       if (document.activeElement.contentEditable === 'true') return;
+      if (document.activeElement.id === 'add-ref-input') return;
 
       const text = e.clipboardData.getData('text');
       if (text) {
@@ -1251,6 +1299,29 @@
       renderLines();
       renderReferences();
     }
+
+    // Refs container drop target (for dragging attached refs back to pile)
+    document.getElementById('refs-container').addEventListener('dragover', (e) => {
+      if (e.dataTransfer.types.includes('application/attached-ref')) {
+        e.preventDefault();
+      }
+    });
+
+    document.getElementById('refs-container').addEventListener('drop', (e) => {
+      const data = e.dataTransfer.getData('application/attached-ref');
+      if (!data) return;
+      e.preventDefault();
+      const { refId, lineId } = JSON.parse(data);
+      // Detach from line
+      const line = getCurrentSession().lines.find(l => l.id === lineId);
+      if (line && line.referenceIds) {
+        line.referenceIds = line.referenceIds.filter(id => id !== refId);
+      }
+      saveData();
+      renderLines();
+      renderReferences();
+      renderAttachedRefs();
+    });
 
     // Init
     async function init() {
