@@ -12,10 +12,10 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: Georgia, 'Times New Roman', serif;
       height: 100vh;
       overflow: hidden;
-      background: #fafafa;
+      background: #f5f5f0;
     }
 
     .container {
@@ -24,22 +24,22 @@
     }
 
     .panel {
-      padding: 20px;
+      padding-top: 24px;
+      padding-bottom: 60px;
       overflow-y: auto;
+      background: #fffef9;
     }
 
     .left-panel {
       flex: 1;
-      border-right: 1px solid #e0e0e0;
-      background: #fff;
+      border-right: 1px dashed #ccc;
     }
 
     .middle-panel {
       width: 0;
       overflow: hidden;
       transition: width 0.2s ease, padding 0.2s ease;
-      background: #f5f5f5;
-      border-right: 1px solid #e0e0e0;
+      border-right: 1px dashed #ccc;
       padding: 0;
     }
 
@@ -49,8 +49,8 @@
     }
 
     .middle-panel.expanded {
-      width: 280px;
-      padding: 20px;
+      width: 260px;
+      padding-top: 24px;
     }
 
     .middle-panel.expanded > * {
@@ -58,195 +58,223 @@
     }
 
     .right-panel {
-      width: 300px;
-      background: #fff;
+      width: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #refs-container {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .right-panel-actions {
+      margin-top: auto;
+      padding: 16px 20px 20px;
     }
 
     .panel-title {
-      font-size: 12px;
-      font-weight: 600;
+      display: flex;
+      flex-direction: row;
+      font-size: 11px;
+      font-weight: normal;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #666;
-      margin-bottom: 16px;
+      letter-spacing: 1px;
+      color: #999;
+      padding: 0 20px 8px;
+      border-bottom: 2px dotted #ddd;
     }
 
     /* Text Lines */
     .line {
-      padding: 12px;
-      margin-bottom: 8px;
-      background: #fafafa;
-      border-radius: 6px;
-      cursor: pointer;
+      padding: 8px 6px;
+      border-bottom: 2px dotted #ddd;
+      cursor: text;
       position: relative;
-      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      min-height: 36px;
     }
 
     .line:hover {
-      background: #f0f0f0;
+      background: rgba(0,0,0,0.02);
     }
 
     .line.selected {
-      background: #e8f4fc;
-      outline: 2px solid #2196F3;
+      background: transparent;
     }
 
     .line.drop-attach {
-      background: #e3f2fd;
-      outline: 2px dashed #2196F3;
+      background: rgba(0,0,0,0.03);
     }
 
     .line.drop-attach::after {
-      content: '+ Attach ref';
+      content: '+ attach';
       position: absolute;
-      top: 50%;
-      right: 12px;
-      transform: translateY(-50%);
-      font-size: 11px;
-      color: #1976D2;
-      background: #bbdefb;
-      padding: 2px 8px;
-      border-radius: 4px;
+      right: 24px;
+      font-size: 10px;
+      color: #666;
+      font-style: italic;
     }
 
     .line.drop-insert {
-      margin-bottom: 24px;
+      border-bottom: 2px solid #666;
     }
 
     .line.drop-insert::after {
-      content: '+ Insert line below';
+      content: '+ insert below';
       position: absolute;
-      bottom: -20px;
-      left: 12px;
-      font-size: 11px;
-      color: #1976D2;
-      background: #bbdefb;
-      padding: 2px 8px;
-      border-radius: 4px;
+      bottom: -14px;
+      left: 0;
+      font-size: 10px;
+      color: #666;
+      font-style: italic;
+    }
+
+    .line-handle {
+      cursor: grab;
+      color: #ccc;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-right: 6px;
+      opacity: 0;
+      transition: opacity 0.15s;
+      user-select: none;
+    }
+
+    .line:hover .line-handle {
+      opacity: 1;
+    }
+
+    .line-handle:active {
+      cursor: grabbing;
     }
 
     .line-text {
-      min-height: 20px;
+      flex: 1;
       outline: none;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .line:hover .line-text,
+    .line.selected .line-text,
+    .line-text:focus {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
     }
 
     .line-text:empty:before {
-      content: 'Type something...';
-      color: #999;
+      content: '...';
+      color: #ccc;
+      font-style: italic;
     }
 
     .line-refs-indicator {
-      position: absolute;
-      top: 8px;
-      right: 32px;
-      font-size: 11px;
-      color: #2196F3;
-      background: #e3f2fd;
-      padding: 2px 6px;
-      border-radius: 10px;
+      font-size: 10px;
+      color: #888;
+      margin-left: 8px;
+      flex-shrink: 0;
     }
 
     .line-delete {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 18px;
-      height: 18px;
       border: none;
-      background: #e0e0e0;
-      border-radius: 50%;
+      background: none;
       cursor: pointer;
-      font-size: 13px;
-      line-height: 16px;
-      text-align: center;
-      color: #999;
-      transition: background 0.15s, color 0.15s;
+      font-size: 14px;
+      color: #ccc;
+      margin-left: 4px;
+      flex-shrink: 0;
+      transition: color 0.15s;
     }
 
     .line-delete:hover {
-      background: #f44336;
-      color: #fff;
+      color: #c00;
     }
 
     .add-line-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 12px;
-      color: #666;
+      padding: 10px 20px;
+      color: #999;
       cursor: pointer;
-      border-radius: 6px;
-      transition: background 0.15s;
+      font-size: 14px;
+      font-style: italic;
     }
 
     .add-line-btn:hover {
-      background: #f0f0f0;
-      color: #333;
+      color: #666;
     }
 
     /* References */
     .reference {
-      padding: 12px;
-      margin-bottom: 8px;
-      background: #fafafa;
-      border-radius: 6px;
+      padding: 8px 20px;
+      border-bottom: 2px dotted #ddd;
       cursor: grab;
-      transition: background 0.15s, transform 0.15s;
       position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
     }
 
     .reference:hover {
-      background: #f0f0f0;
+      background: rgba(0,0,0,0.02);
     }
 
     .reference-delete {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 20px;
-      height: 20px;
       border: none;
-      background: #e0e0e0;
-      border-radius: 50%;
+      background: none;
       cursor: pointer;
       font-size: 14px;
-      line-height: 18px;
-      text-align: center;
-      color: #999;
-      transition: background 0.15s, color 0.15s;
+      color: #ccc;
+      flex-shrink: 0;
+      transition: color 0.15s;
     }
 
     .reference-delete:hover {
-      background: #f44336;
-      color: #fff;
+      color: #c00;
     }
 
     .reference.dragging {
       opacity: 0.5;
-      transform: scale(0.98);
     }
 
     .reference-content {
+      flex: 1;
       font-size: 14px;
-      word-break: break-word;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .reference:hover .reference-content {
+      white-space: normal;
+      overflow: visible;
     }
 
     .reference-type {
-      font-size: 11px;
-      color: #999;
-      margin-top: 4px;
+      font-size: 10px;
+      color: #aaa;
+      flex-shrink: 0;
     }
 
     .reference-image {
       max-width: 100%;
-      border-radius: 4px;
-      margin-bottom: 4px;
+      max-height: 60px;
+      border-radius: 2px;
+    }
+
+    .reference:hover .reference-image {
+      max-height: none;
     }
 
     .reference-url {
-      color: #2196F3;
+      color: #666;
       text-decoration: none;
-      font-size: 13px;
+      font-size: 14px;
     }
 
     .reference-url:hover {
@@ -255,89 +283,140 @@
 
     /* Middle panel refs */
     .attached-ref {
-      padding: 10px;
-      padding-right: 30px;
-      margin-bottom: 6px;
-      background: #fff;
-      border-radius: 4px;
-      font-size: 13px;
+      padding: 8px 20px;
+      border-bottom: 2px dotted #ddd;
+      font-size: 14px;
       position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .attached-ref-content {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .attached-ref:hover .attached-ref-content {
+      white-space: normal;
+      overflow: visible;
     }
 
     .attached-ref-delete {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 18px;
-      height: 18px;
       border: none;
-      background: #e0e0e0;
-      border-radius: 50%;
+      background: none;
       cursor: pointer;
-      font-size: 13px;
-      line-height: 16px;
-      text-align: center;
-      color: #999;
-      transition: background 0.15s, color 0.15s;
+      font-size: 14px;
+      color: #ccc;
+      flex-shrink: 0;
+      transition: color 0.15s;
     }
 
     .attached-ref-delete:hover {
-      background: #f44336;
-      color: #fff;
-    }
-
-    .no-refs-msg {
-      color: #999;
-      font-size: 13px;
-      font-style: italic;
+      color: #c00;
     }
 
     /* Actions */
-    .action-btn {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      background: #f0f0f0;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.15s;
-    }
-
-    .action-btn:hover {
-      background: #e0e0e0;
-    }
-
     .paste-area {
-      padding: 16px;
-      border: 2px dashed #ddd;
-      border-radius: 6px;
+      padding: 14px;
+      border: 1px dashed #ccc;
       text-align: center;
       color: #999;
-      font-size: 13px;
+      font-size: 14px;
       margin-bottom: 16px;
       cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
+      font-style: italic;
     }
 
     .paste-area:hover, .paste-area.dragover {
-      border-color: #2196F3;
-      background: #e3f2fd;
+      border-color: #888;
+      background: rgba(0,0,0,0.02);
+    }
+
+    .action-btn {
+      display: block;
+      width: fit-content;
+      height: fit-content;
+      padding: 8px;
+      margin-top: 8px;
+      background: none;
+      border: 2px dotted #ccc;
+      cursor: pointer;
+      font-size: 14px;
+      font-style: italic;
+      color: #888;
+    }
+
+    .action-btn:hover {
+      border-color: #888;
+      color: #666;
+    }
+
+    .action-btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .action-btn-row .action-btn {
+      flex: 1;
+      margin-top: 0;
     }
 
     /* Inline reference in text */
     .inline-ref {
-      background: #e3f2fd;
-      padding: 1px 4px;
-      border-radius: 3px;
-      color: #1976D2;
-      cursor: pointer;
+      background: rgba(100,149,237,0.15);
+      padding: 1px 3px;
+      border-radius: 2px;
+      color: inherit;
     }
 
-    .inline-ref:hover {
-      background: #bbdefb;
+    /* Tabs */
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      background: #fffef9;
+      border-top: 2px dotted #ccc;
+      padding: 0 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #888;
+      border-right: 2px dotted #ccc;
+      position: relative;
+    }
+
+    .tab:hover {
+      color: #333;
+    }
+
+    .tab.active {
+      color: #333;
+      background: rgba(0,0,0,0.03);
+    }
+
+    .tab-add {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .tab-add:hover {
+      color: #333;
+    }
+
+    .tab-add.disabled {
+      color: #ddd;
+      cursor: default;
     }
 
     /* Arena import modal */
@@ -345,7 +424,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.3);
       z-index: 100;
       align-items: center;
       justify-content: center;
@@ -356,24 +435,26 @@
     }
 
     .modal {
-      background: #fff;
+      background: #fffef9;
       padding: 24px;
-      border-radius: 8px;
-      width: 400px;
+      border: 1px solid #ccc;
+      width: 360px;
       max-width: 90%;
     }
 
     .modal h3 {
       margin-bottom: 16px;
+      font-weight: normal;
+      font-size: 16px;
     }
 
     .modal input {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 8px;
+      border: 1px solid #ccc;
       font-size: 14px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
+      font-family: inherit;
     }
 
     .modal-actions {
@@ -383,25 +464,18 @@
     }
 
     .modal-actions button {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 4px;
+      padding: 6px 14px;
+      border: 1px solid #ccc;
+      background: none;
       cursor: pointer;
       font-size: 14px;
-    }
-
-    .modal-actions .cancel {
-      background: #f0f0f0;
+      font-family: inherit;
     }
 
     .modal-actions .confirm {
-      background: #2196F3;
+      background: #333;
       color: #fff;
-    }
-
-    .loading {
-      color: #999;
-      font-style: italic;
+      border-color: #333;
     }
   </style>
 </head>
@@ -419,14 +493,17 @@
     </div>
 
     <div class="panel right-panel">
-      <div class="panel-title">References</div>
-      <div class="paste-area" id="paste-area" onclick="handlePasteClick()">
-        Click to paste or drop content here
+      <div class="panel-title">References  
+        <button class="action-btn" onclick="showArenaModal()">**</button>
+        <button class="action-btn" onclick="clearAllReferences()">Ø</button>
       </div>
+      <div class="add-line-btn" style="border-bottom: 2px dotted #ddd;" onclick="handlePasteClick()">+ Add reference</div>
       <div id="refs-container"></div>
-      <button class="action-btn" onclick="showArenaModal()">Import from Are.na</button>
+     
     </div>
   </div>
+
+  <div class="tab-bar" id="tab-bar"></div>
 
   <div class="modal-overlay" id="arena-modal">
     <div class="modal">
@@ -467,31 +544,45 @@
     async function saveData() {
       const tx = db.transaction('data', 'readwrite');
       const store = tx.objectStore('data');
-      await store.put({ id: 'main', lines: appState.lines, references: appState.references });
+      await store.put({ id: 'sessions', sessions: sessions, currentSessionIndex: currentSessionIndex });
     }
 
     async function loadData() {
       return new Promise((resolve) => {
         const tx = db.transaction('data', 'readonly');
         const store = tx.objectStore('data');
-        const request = store.get('main');
+        const request = store.get('sessions');
         request.onsuccess = () => {
-          if (request.result) {
+          if (request.result && request.result.sessions) {
             resolve(request.result);
           } else {
-            resolve({ lines: [], references: [] });
+            // Migrate old data or create new
+            const oldRequest = store.get('main');
+            oldRequest.onsuccess = () => {
+              if (oldRequest.result) {
+                resolve({
+                  sessions: [{ name: 'Session 1', lines: oldRequest.result.lines || [], references: oldRequest.result.references || [] }],
+                  currentSessionIndex: 0
+                });
+              } else {
+                resolve({ sessions: [{ name: 'Session 1', lines: [], references: [] }], currentSessionIndex: 0 });
+              }
+            };
+            oldRequest.onerror = () => resolve({ sessions: [{ name: 'Session 1', lines: [], references: [] }], currentSessionIndex: 0 });
           }
         };
-        request.onerror = () => resolve({ lines: [], references: [] });
+        request.onerror = () => resolve({ sessions: [{ name: 'Session 1', lines: [], references: [] }], currentSessionIndex: 0 });
       });
     }
 
     // App State
-    let appState = {
-      lines: [],
-      references: [],
-      selectedLineId: null
-    };
+    const MAX_SESSIONS = 2;
+    let sessions = [];
+    let currentSessionIndex = 0;
+
+    function getCurrentSession() {
+      return sessions[currentSessionIndex] || { lines: [], references: [] };
+    }
 
     function uuid() {
       return crypto.randomUUID();
@@ -502,20 +593,36 @@
       return text.replace(/^(\s*[-*•]\s*|\s*\d+[.)]\s*)/, '');
     }
 
+    let selectedLineId = null;
+
     // Rendering
     function renderLines() {
       const container = document.getElementById('lines-container');
       container.innerHTML = '';
+      const session = getCurrentSession();
 
-      appState.lines.forEach(line => {
+      session.lines.forEach(line => {
         const div = document.createElement('div');
-        div.className = 'line' + (line.id === appState.selectedLineId ? ' selected' : '');
+        div.className = 'line' + (line.id === selectedLineId ? ' selected' : '');
         div.dataset.lineId = line.id;
+
+        const handle = document.createElement('div');
+        handle.className = 'line-handle';
+        handle.textContent = '⠿';
+        handle.draggable = true;
+        handle.ondragstart = (e) => {
+          e.dataTransfer.setData('application/line-id', line.id);
+          e.stopPropagation();
+          setTimeout(() => div.style.opacity = '0.4', 0);
+        };
+        handle.ondragend = () => { div.style.opacity = ''; };
+        div.appendChild(handle);
 
         const textDiv = document.createElement('div');
         textDiv.className = 'line-text';
         textDiv.contentEditable = true;
         textDiv.innerHTML = line.text;
+        textDiv.style.paddingLeft = ((line.indent || 0) * 24) + 'px';
         textDiv.oninput = () => {
           line.text = textDiv.innerHTML;
           saveData();
@@ -523,13 +630,14 @@
         textDiv.onkeydown = (e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            const idx = appState.lines.findIndex(l => l.id === line.id);
+            const idx = getCurrentSession().lines.findIndex(l => l.id === line.id);
             const newLine = {
               id: uuid(),
               text: '',
+              indent: line.indent || 0,
               referenceIds: []
             };
-            appState.lines.splice(idx + 1, 0, newLine);
+            getCurrentSession().lines.splice(idx + 1, 0, newLine);
             saveData();
             renderLines();
             // Focus the new line
@@ -539,6 +647,15 @@
                 allLines[idx + 1].focus();
               }
             }, 10);
+          } else if (e.key === 'Tab') {
+            e.preventDefault();
+            if (e.shiftKey) {
+              line.indent = Math.max(0, (line.indent || 0) - 1);
+            } else {
+              line.indent = Math.min(6, (line.indent || 0) + 1);
+            }
+            textDiv.style.paddingLeft = ((line.indent || 0) * 24) + 'px';
+            saveData();
           }
         };
         textDiv.onpaste = (e) => {
@@ -547,7 +664,7 @@
 
           if (lines.length > 1) {
             e.preventDefault();
-            const idx = appState.lines.findIndex(l => l.id === line.id);
+            const idx = getCurrentSession().lines.findIndex(l => l.id === line.id);
 
             // Put first line in current text box
             line.text = (line.text || '') + lines[0];
@@ -559,7 +676,7 @@
               referenceIds: []
             }));
 
-            appState.lines.splice(idx + 1, 0, ...newLines);
+            getCurrentSession().lines.splice(idx + 1, 0, ...newLines);
             saveData();
             renderLines();
 
@@ -603,13 +720,17 @@
         // Drop zones
         div.ondragover = (e) => {
           e.preventDefault();
-          const rect = div.getBoundingClientRect();
-          const midY = rect.top + rect.height / 2;
           div.classList.remove('drop-attach', 'drop-insert');
-          if (e.clientY < midY) {
-            div.classList.add('drop-attach');
-          } else {
+          if (e.dataTransfer.types.includes('application/line-id')) {
             div.classList.add('drop-insert');
+          } else {
+            const rect = div.getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+            if (e.clientY < midY) {
+              div.classList.add('drop-attach');
+            } else {
+              div.classList.add('drop-insert');
+            }
           }
         };
 
@@ -621,6 +742,18 @@
           e.preventDefault();
           div.classList.remove('drop-attach', 'drop-insert');
 
+          const reorderId = e.dataTransfer.getData('application/line-id');
+          if (reorderId && reorderId !== line.id) {
+            const session = getCurrentSession();
+            const fromIdx = session.lines.findIndex(l => l.id === reorderId);
+            const [moved] = session.lines.splice(fromIdx, 1);
+            const toIdx = session.lines.findIndex(l => l.id === line.id);
+            session.lines.splice(toIdx + 1, 0, moved);
+            saveData();
+            renderLines();
+            return;
+          }
+
           const refId = e.dataTransfer.getData('text/plain');
           if (!refId) return;
 
@@ -628,28 +761,30 @@
           const midY = rect.top + rect.height / 2;
 
           if (e.clientY < midY) {
-            // Top half: attach reference to this line
+            // Top half: attach reference to this line (keep in pool so it can be looked up)
             if (!line.referenceIds) line.referenceIds = [];
             if (!line.referenceIds.includes(refId)) {
               line.referenceIds.push(refId);
             }
           } else {
-            // Bottom half: insert as new line below
-            const ref = appState.references.find(r => r.id === refId);
+            // Bottom half: insert as new line below and remove from pool
+            const ref = getCurrentSession().references.find(r => r.id === refId);
             if (ref) {
               const newLine = {
                 id: uuid(),
                 text: formatRefAsText(ref),
                 referenceIds: [refId]
               };
-              const idx = appState.lines.findIndex(l => l.id === line.id);
-              appState.lines.splice(idx + 1, 0, newLine);
+              const idx = getCurrentSession().lines.findIndex(l => l.id === line.id);
+              getCurrentSession().lines.splice(idx + 1, 0, newLine);
             }
+            getCurrentSession().references = getCurrentSession().references.filter(r => r.id !== refId);
           }
 
           saveData();
           renderLines();
-          if (appState.selectedLineId === line.id) {
+          renderReferences();
+          if (selectedLineId === line.id) {
             renderAttachedRefs();
           }
         };
@@ -671,17 +806,20 @@
       const container = document.getElementById('refs-container');
       container.innerHTML = '';
 
-      appState.references.forEach(ref => {
+      getCurrentSession().references.forEach(ref => {
         const div = document.createElement('div');
         div.className = 'reference';
         div.draggable = true;
         div.dataset.refId = ref.id;
 
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'reference-content';
+
         if (ref.type === 'image') {
           const img = document.createElement('img');
           img.src = ref.content;
           img.className = 'reference-image';
-          div.appendChild(img);
+          contentDiv.appendChild(img);
         } else if (ref.type === 'url') {
           const a = document.createElement('a');
           a.href = ref.content;
@@ -689,18 +827,11 @@
           a.textContent = ref.content;
           a.target = '_blank';
           a.onclick = (e) => e.stopPropagation();
-          div.appendChild(a);
+          contentDiv.appendChild(a);
         } else {
-          const content = document.createElement('div');
-          content.className = 'reference-content';
-          content.textContent = ref.content.length > 100 ? ref.content.slice(0, 100) + '...' : ref.content;
-          div.appendChild(content);
+          contentDiv.textContent = ref.content;
         }
-
-        const typeLabel = document.createElement('div');
-        typeLabel.className = 'reference-type';
-        typeLabel.textContent = ref.type;
-        div.appendChild(typeLabel);
+        div.appendChild(contentDiv);
 
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'reference-delete';
@@ -729,7 +860,7 @@
       const title = document.getElementById('middle-panel-title');
       container.innerHTML = '';
 
-      const line = appState.lines.find(l => l.id === appState.selectedLineId);
+      const line = getCurrentSession().lines.find(l => l.id === selectedLineId);
       if (!line || !line.referenceIds || line.referenceIds.length === 0) {
         title.style.display = 'none';
         return;
@@ -737,19 +868,23 @@
       title.style.display = '';
 
       line.referenceIds.forEach(refId => {
-        const ref = appState.references.find(r => r.id === refId);
+        const ref = getCurrentSession().references.find(r => r.id === refId);
         if (!ref) return;
 
         const div = document.createElement('div');
         div.className = 'attached-ref';
 
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'attached-ref-content';
+
         if (ref.type === 'image') {
-          div.innerHTML = `<img src="${ref.content}" style="max-width:100%;border-radius:4px;">`;
+          contentDiv.innerHTML = `<img src="${ref.content}" class="reference-image">`;
         } else if (ref.type === 'url') {
-          div.innerHTML = `<a href="${ref.content}" target="_blank" class="reference-url">${ref.content}</a>`;
+          contentDiv.innerHTML = `<a href="${ref.content}" target="_blank" class="reference-url">${ref.content}</a>`;
         } else {
-          div.textContent = ref.content.length > 80 ? ref.content.slice(0, 80) + '...' : ref.content;
+          contentDiv.textContent = ref.content;
         }
+        div.appendChild(contentDiv);
 
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'attached-ref-delete';
@@ -765,7 +900,7 @@
     }
 
     function detachReference(lineId, refId) {
-      const line = appState.lines.find(l => l.id === lineId);
+      const line = getCurrentSession().lines.find(l => l.id === lineId);
       if (line && line.referenceIds) {
         line.referenceIds = line.referenceIds.filter(id => id !== refId);
       }
@@ -775,7 +910,7 @@
     }
 
     function insertRefIntoLine(lineId, ref) {
-      const line = appState.lines.find(l => l.id === lineId);
+      const line = getCurrentSession().lines.find(l => l.id === lineId);
       if (!line) return;
 
       const insertion = formatRefAsText(ref);
@@ -785,8 +920,8 @@
     }
 
     function selectLine(lineId, preserveFocus = false) {
-      const changed = appState.selectedLineId !== lineId;
-      appState.selectedLineId = lineId;
+      const changed = selectedLineId !== lineId;
+      selectedLineId = lineId;
 
       if (changed) {
         // Update selection classes without full re-render if preserving focus
@@ -800,7 +935,7 @@
       }
 
       const middlePanel = document.getElementById('middle-panel');
-      const line = appState.lines.find(l => l.id === lineId);
+      const line = getCurrentSession().lines.find(l => l.id === lineId);
       const hasRefs = line && line.referenceIds && line.referenceIds.length > 0;
 
       if (lineId && hasRefs) {
@@ -818,7 +953,7 @@
         text: '',
         referenceIds: []
       };
-      appState.lines.push(newLine);
+      getCurrentSession().lines.push(newLine);
       saveData();
       renderLines();
 
@@ -837,16 +972,16 @@
         content: content,
         type: type
       };
-      appState.references.push(newRef);
+      getCurrentSession().references.push(newRef);
       saveData();
       renderReferences();
     }
 
     function deleteReference(refId) {
       // Remove from references array
-      appState.references = appState.references.filter(r => r.id !== refId);
+      getCurrentSession().references = getCurrentSession().references.filter(r => r.id !== refId);
       // Remove from all lines' referenceIds
-      appState.lines.forEach(line => {
+      getCurrentSession().lines.forEach(line => {
         if (line.referenceIds) {
           line.referenceIds = line.referenceIds.filter(id => id !== refId);
         }
@@ -854,15 +989,28 @@
       saveData();
       renderReferences();
       renderLines();
-      if (appState.selectedLineId) {
+      if (selectedLineId) {
         renderAttachedRefs();
       }
     }
 
+    function clearAllReferences() {
+      if (!getCurrentSession().references.length) return;
+      if (!confirm('Clear all references from the pile?')) return;
+      getCurrentSession().references = [];
+      getCurrentSession().lines.forEach(line => {
+        if (line.referenceIds) line.referenceIds = [];
+      });
+      saveData();
+      renderReferences();
+      renderLines();
+      if (selectedLineId) renderAttachedRefs();
+    }
+
     function deleteLine(lineId) {
-      appState.lines = appState.lines.filter(l => l.id !== lineId);
-      if (appState.selectedLineId === lineId) {
-        appState.selectedLineId = null;
+      getCurrentSession().lines = getCurrentSession().lines.filter(l => l.id !== lineId);
+      if (selectedLineId === lineId) {
+        selectedLineId = null;
         document.getElementById('middle-panel').classList.remove('expanded');
       }
       saveData();
@@ -898,6 +1046,7 @@
 
     // Paste area drag/drop for files
     const pasteArea = document.getElementById('paste-area');
+    if (pasteArea) {
     pasteArea.ondragover = (e) => {
       e.preventDefault();
       pasteArea.classList.add('dragover');
@@ -928,6 +1077,7 @@
         }
       }
     };
+    } // end if (pasteArea)
 
     // Global paste handler
     document.addEventListener('paste', (e) => {
@@ -1047,17 +1197,68 @@
         referenceIds: []
       }));
 
-      appState.lines.push(...newLines);
+      getCurrentSession().lines.push(...newLines);
       saveData();
       renderLines();
     });
+
+    // Tabs
+    function renderTabs() {
+      const tabBar = document.getElementById('tab-bar');
+      tabBar.innerHTML = '';
+
+      sessions.forEach((session, idx) => {
+        const tab = document.createElement('div');
+        tab.className = 'tab' + (idx === currentSessionIndex ? ' active' : '');
+        tab.textContent = session.name;
+        tab.onclick = () => switchSession(idx);
+        tabBar.appendChild(tab);
+      });
+
+      if (sessions.length < MAX_SESSIONS) {
+        const addTab = document.createElement('div');
+        addTab.className = 'tab-add';
+        addTab.textContent = '+';
+        addTab.onclick = addSession;
+        tabBar.appendChild(addTab);
+      }
+    }
+
+    function switchSession(idx) {
+      if (idx === currentSessionIndex) return;
+      currentSessionIndex = idx;
+      selectedLineId = null;
+      document.getElementById('middle-panel').classList.remove('expanded');
+      saveData();
+      renderTabs();
+      renderLines();
+      renderReferences();
+    }
+
+    function addSession() {
+      if (sessions.length >= MAX_SESSIONS) return;
+      const newSession = {
+        name: 'Session ' + (sessions.length + 1),
+        lines: [],
+        references: []
+      };
+      sessions.push(newSession);
+      currentSessionIndex = sessions.length - 1;
+      selectedLineId = null;
+      document.getElementById('middle-panel').classList.remove('expanded');
+      saveData();
+      renderTabs();
+      renderLines();
+      renderReferences();
+    }
 
     // Init
     async function init() {
       await initDB();
       const data = await loadData();
-      appState.lines = data.lines || [];
-      appState.references = data.references || [];
+      sessions = data.sessions;
+      currentSessionIndex = data.currentSessionIndex || 0;
+      renderTabs();
       renderLines();
       renderReferences();
     }
