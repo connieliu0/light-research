@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Text + References</title>
+  <title>Light Research
+  </title>
   <style>
     * {
       box-sizing: border-box;
@@ -498,9 +499,12 @@
       <div class="panel-title">
         <span>References</span>
         <span style="display:flex; gap:8px; margin-left:auto;">
+          <button onclick="exportData()" title="Export backup" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">↓</button>
+          <button onclick="document.getElementById('import-input').click()" title="Import backup" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">↑</button>
           <button onclick="showArenaModal()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">**</button>
           <button onclick="clearAllReferences()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">Ø</button>
         </span>
+        <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
       </div>
       <div id="add-ref-btn" class="add-line-btn" style="border-bottom: 2px dotted #ddd;" onclick="showRefInput()">+ Add reference</div>
       <input id="add-ref-input" type="text" placeholder="Type or paste a reference..." style="display:none; width:100%; padding:8px 20px; border:none; border-bottom:2px dotted #ddd; outline:none; font-family:inherit; font-size:14px; color:#333; background:none; box-sizing:border-box;">
@@ -581,6 +585,36 @@
       });
     }
 
+    // Undo stack
+    const undoStack = [];
+    const MAX_UNDO = 50;
+
+    function pushUndo() {
+      undoStack.push(JSON.stringify({ sessions, currentSessionIndex }));
+      if (undoStack.length > MAX_UNDO) undoStack.shift();
+    }
+
+    function undo() {
+      if (!undoStack.length) return;
+      const state = JSON.parse(undoStack.pop());
+      sessions = state.sessions;
+      currentSessionIndex = state.currentSessionIndex;
+      selectedLineId = null;
+      document.getElementById('middle-panel').classList.remove('expanded');
+      saveData();
+      renderTabs();
+      renderLines();
+      renderReferences();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        if (document.activeElement.contentEditable === 'true') return;
+        e.preventDefault();
+        undo();
+      }
+    });
+
     // App State
     const MAX_SESSIONS = 2;
     let sessions = [];
@@ -636,6 +670,7 @@
         textDiv.onkeydown = (e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
+            pushUndo();
             const idx = getCurrentSession().lines.findIndex(l => l.id === line.id);
             const newLine = {
               id: uuid(),
@@ -670,6 +705,8 @@
 
           if (lines.length > 1) {
             e.preventDefault();
+            e.stopPropagation();
+            pushUndo();
             const idx = getCurrentSession().lines.findIndex(l => l.id === line.id);
 
             // Put first line in current text box
@@ -964,6 +1001,7 @@
 
     // Actions
     function addLine() {
+      pushUndo();
       const newLine = {
         id: uuid(),
         text: '',
@@ -1021,6 +1059,7 @@
     });
 
     function addReference(content, type = 'text') {
+      pushUndo();
       const newRef = {
         id: uuid(),
         content: content,
@@ -1032,6 +1071,7 @@
     }
 
     function deleteReference(refId) {
+      pushUndo();
       // Remove from references array
       getCurrentSession().references = getCurrentSession().references.filter(r => r.id !== refId);
       // Remove from all lines' referenceIds
@@ -1051,6 +1091,7 @@
     function clearAllReferences() {
       if (!getCurrentSession().references.length) return;
       if (!confirm('Clear all references from the pile?')) return;
+      pushUndo();
       getCurrentSession().references = [];
       getCurrentSession().lines.forEach(line => {
         if (line.referenceIds) line.referenceIds = [];
@@ -1062,6 +1103,7 @@
     }
 
     function deleteLine(lineId) {
+      pushUndo();
       getCurrentSession().lines = getCurrentSession().lines.filter(l => l.id !== lineId);
       if (selectedLineId === lineId) {
         selectedLineId = null;
@@ -1181,7 +1223,9 @@
         for (const block of blocks) {
           let content, type;
 
-          if (block.class === 'Image') {
+          if (block.class === 'Channel') {
+            continue;
+          } else if (block.class === 'Image') {
             content = block.image?.display?.url || block.image?.original?.url;
             type = 'image';
           } else if (block.class === 'Link') {
@@ -1237,6 +1281,8 @@
       if (!text) return;
 
       e.preventDefault();
+      e.stopPropagation();
+      pushUndo();
       const lines = text.split(/\r?\n/).filter(l => l.trim()).map(cleanLinePrefix);
 
       const newLines = lines.map(text => ({
@@ -1251,6 +1297,32 @@
     });
 
     // Tabs
+    function renameSession(idx, tabEl) {
+      const session = sessions[idx];
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = session.name;
+      input.style.cssText = 'border:none;outline:none;background:transparent;font-size:14px;font-family:inherit;color:inherit;width:100%;padding:0;';
+      tabEl.textContent = '';
+      tabEl.appendChild(input);
+      input.focus();
+      input.select();
+
+      function commit() {
+        const val = input.value.trim();
+        if (val) session.name = val;
+        saveData();
+        renderTabs();
+      }
+
+      input.onblur = commit;
+      input.onkeydown = (e) => {
+        if (e.key === 'Enter') { input.blur(); }
+        else if (e.key === 'Escape') { input.value = session.name; input.blur(); }
+        e.stopPropagation();
+      };
+    }
+
     function renderTabs() {
       const tabBar = document.getElementById('tab-bar');
       tabBar.innerHTML = '';
@@ -1260,6 +1332,7 @@
         tab.className = 'tab' + (idx === currentSessionIndex ? ' active' : '');
         tab.textContent = session.name;
         tab.onclick = () => switchSession(idx);
+        tab.ondblclick = (e) => { e.stopPropagation(); renameSession(idx, tab); };
         tabBar.appendChild(tab);
       });
 
@@ -1322,6 +1395,42 @@
       renderReferences();
       renderAttachedRefs();
     });
+
+    // Export / Import
+    function exportData() {
+      const blob = new Blob([JSON.stringify({ sessions }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'light-research-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const data = JSON.parse(evt.target.result);
+          if (!data.sessions || !Array.isArray(data.sessions)) throw new Error('Invalid backup file');
+          if (!confirm('This will replace all current sessions with the backup. Continue?')) return;
+          sessions = data.sessions;
+          currentSessionIndex = 0;
+          selectedLineId = null;
+          document.getElementById('middle-panel').classList.remove('expanded');
+          await saveData();
+          renderTabs();
+          renderLines();
+          renderReferences();
+        } catch (err) {
+          alert('Could not import: ' + err.message);
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
+    }
 
     // Init
     async function init() {
