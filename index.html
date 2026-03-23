@@ -208,6 +208,11 @@
       margin-left: 4px;
       flex-shrink: 0;
       transition: color 0.15s;
+      opacity: 0;
+    }
+
+    .line:hover .line-delete {
+      opacity: 1;
     }
 
     .line-delete:hover {
@@ -249,6 +254,11 @@
       color: #ccc;
       flex-shrink: 0;
       transition: color 0.15s;
+      opacity: 0;
+    }
+
+    .reference:hover .reference-delete {
+      opacity: 1;
     }
 
     .reference-delete:hover {
@@ -319,9 +329,9 @@
       text-overflow: ellipsis;
     }
 
-    .attached-ref:hover .attached-ref-content {
+    .attached-ref:hover .attached-ref-content:not(.attached-ref-content--url) {
       white-space: normal;
-      overflow: visible;
+      overflow: hidden;
     }
 
     .attached-ref-delete {
@@ -332,6 +342,11 @@
       color: #ccc;
       flex-shrink: 0;
       transition: color 0.15s;
+      opacity: 0;
+    }
+
+    .attached-ref:hover .attached-ref-delete {
+      opacity: 1;
     }
 
     .attached-ref-delete:hover {
@@ -959,6 +974,7 @@
         if (ref.type === 'image') {
           contentDiv.innerHTML = `<img src="${ref.content}" class="reference-image">`;
         } else if (ref.type === 'url') {
+          contentDiv.classList.add('attached-ref-content--url');
           contentDiv.innerHTML = `<a href="${ref.content}" target="_blank" class="reference-url">${ref.content}</a>`;
         } else {
           contentDiv.textContent = ref.content;
