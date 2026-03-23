@@ -1430,12 +1430,15 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = 'light-research-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
 
     function importData(e) {
       const file = e.target.files[0];
+      e.target.value = '';
       if (!file) return;
       const reader = new FileReader();
       reader.onload = async (evt) => {
@@ -1454,7 +1457,6 @@
         } catch (err) {
           alert('Could not import: ' + err.message);
         }
-        e.target.value = '';
       };
       reader.readAsText(file);
     }
