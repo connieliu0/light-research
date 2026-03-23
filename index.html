@@ -33,14 +33,14 @@
 
     .left-panel {
       flex: 1;
-      border-right: 1px dashed #ccc;
+      border-right: 0.5px dashed #ccc;
     }
 
     .middle-panel {
       width: 0;
       overflow: hidden;
       transition: width 0.2s ease, padding 0.2s ease;
-      border-right: 1px dashed #ccc;
+      border-right: 0.5px dashed #ccc;
       padding: 0;
     }
 
@@ -103,6 +103,23 @@
 
     .line.selected {
       background: transparent;
+    }
+
+    .line.indented {
+      padding-left: calc(var(--indent-offset, 0px) + 6px);
+    }
+
+    .line.indented::before {
+      content: '';
+      position: absolute;
+      left: 26px;
+      top: 0;
+      bottom: 0;
+      border-left: 1px dotted #c6c6c6;
+    }
+
+    .line.indented .line-text {
+      padding-left: 0 !important;
     }
 
     .line.drop-attach {
@@ -643,8 +660,10 @@
 
       session.lines.forEach(line => {
         const div = document.createElement('div');
-        div.className = 'line' + (line.id === selectedLineId ? ' selected' : '');
+        const indent = line.indent || 0;
+        div.className = 'line' + (line.id === selectedLineId ? ' selected' : '') + (indent > 0 ? ' indented' : '');
         div.dataset.lineId = line.id;
+        if (indent > 0) div.style.setProperty('--indent-offset', (indent * 24) + 'px');
 
         const handle = document.createElement('div');
         handle.className = 'line-handle';
@@ -662,6 +681,7 @@
         textDiv.className = 'line-text';
         textDiv.contentEditable = true;
         textDiv.innerHTML = line.text;
+        textDiv.style.paddingLeft = '0px';
         textDiv.style.paddingLeft = ((line.indent || 0) * 24) + 'px';
         textDiv.oninput = () => {
           line.text = textDiv.innerHTML;
@@ -690,12 +710,19 @@
             }, 10);
           } else if (e.key === 'Tab') {
             e.preventDefault();
+            pushUndo();
             if (e.shiftKey) {
               line.indent = Math.max(0, (line.indent || 0) - 1);
             } else {
               line.indent = Math.min(6, (line.indent || 0) + 1);
             }
-            textDiv.style.paddingLeft = ((line.indent || 0) * 24) + 'px';
+            if (line.indent > 0) {
+              div.classList.add('indented');
+              div.style.setProperty('--indent-offset', (line.indent * 24) + 'px');
+            } else {
+              div.classList.remove('indented');
+              div.style.removeProperty('--indent-offset');
+            }
             saveData();
           }
         };
