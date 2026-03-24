@@ -548,21 +548,33 @@
   <div class="tab-bar" id="tab-bar"></div>
 
   <div class="modal-overlay" id="help-modal">
-    <div class="modal" style="width:320px;position:relative;">
+    <div class="modal" style="width:460px;position:relative;">
       <button onclick="closeHelpModal()" style="position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;font-size:18px;color:#bbb;padding:0;line-height:1;">×</button>
       <h3 style="color:#666;">keyboard & controls</h3>
-      <table style="width:100%;border-collapse:collapse;font-size:13px;color:#555;">
-        <tbody>
-          <tr><td style="padding:5px 0;color:#999;width:48px;">Enter</td><td style="padding:5px 0;">new line</td></tr>
-          <tr><td style="padding:5px 0;color:#999;">Tab</td><td style="padding:5px 0;">indent</td></tr>
-          <tr><td style="padding:5px 0;color:#999;">⇧ Tab</td><td style="padding:5px 0;">unindent</td></tr>
-          <tr><td style="padding:5px 0;color:#999;">⌘ Z</td><td style="padding:5px 0;">undo</td></tr>
-          <tr><td style="padding:5px 0;color:#999;border-top:1px solid #eee;">↓</td><td style="padding:5px 0;border-top:1px solid #eee;">export as JSON</td></tr>
-          <tr><td style="padding:5px 0;color:#999;">↑</td><td style="padding:5px 0;">import JSON</td></tr>
-          <tr><td style="padding:5px 0;color:#999;">**</td><td style="padding:5px 0;">import from Are.na</td></tr>
-          <tr><td style="padding:5px 0;color:#999;">Ø</td><td style="padding:5px 0;">clear all references</td></tr>
-        </tbody>
-      </table>
+      <div style="display: flex; gap: 24px; width: 100%;">
+        <!-- First column: before border-top -->
+        <table style="width:50%;border-collapse:collapse;font-size:13px;color:#555;">
+          <tbody>
+            <tr><td style="padding:5px 0;color:#999;width:48px;">Enter</td><td style="padding:5px 0;">new line</td></tr>
+            <tr><td style="padding:5px 0;color:#999;">Tab</td><td style="padding:5px 0;">indent</td></tr>
+            <tr><td style="padding:5px 0;color:#999;">⇧ Tab</td><td style="padding:5px 0;">unindent</td></tr>
+            <tr><td style="padding:5px 0;color:#999;">⌘ Z</td><td style="padding:5px 0;">undo</td></tr>
+          </tbody>
+        </table>
+        <!-- Second column: after border-top -->
+        <table style="width:50%;border-collapse:collapse;font-size:13px;color:#555;">
+          <tbody>
+            <tr>
+              <td style="padding:5px 0;color:#999;width:48px;border-top:1px solid #eee;">↓</td>
+              <td style="padding:5px 0;border-top:1px solid #eee;">export as JSON</td>
+            </tr>
+            <tr><td style="padding:5px 0;color:#999;">↑</td><td style="padding:5px 0;">import JSON</td></tr>
+            <tr><td style="padding:5px 0;color:#999;">✶✶</td><td style="padding:5px 0;">Are.na import</td></tr>
+            <tr><td style="padding:5px 0;color:#999;">Ø</td><td style="padding:5px 0;">clear all references</td></tr>
+            <tr><td style="padding:5px 0;color:#999;">?</td><td style="padding:5px 0;">check shortcuts</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p style="color:#666; padding-top:10px; font-size:14px;">If you have any feedback, please <a href="mailto:cliu55567@gmail.com" style="color:#666; text-decoration:underline;">email me</a>!</p>
     </div>
   </div>
