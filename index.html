@@ -534,6 +534,7 @@
           <button onclick="document.getElementById('import-input').click()" title="Import backup" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">↑</button>
           <button onclick="showArenaModal()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;display:flex;align-items:center;">✶✶</button>
           <button onclick="clearAllReferences()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">Ø</button>
+          <button onclick="document.getElementById('help-modal').classList.add('visible')" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">?</button>
         </span>
         <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
       </div>
@@ -545,6 +546,25 @@
   </div>
 
   <div class="tab-bar" id="tab-bar"></div>
+
+  <div class="modal-overlay" id="help-modal">
+    <div class="modal" style="width:320px;position:relative;">
+      <button onclick="closeHelpModal()" style="position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;font-size:18px;color:#bbb;padding:0;line-height:1;">×</button>
+      <h3 style="color:#666;">keyboard & controls</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;color:#555;">
+        <tbody>
+          <tr><td style="padding:5px 0;color:#999;width:48px;">Enter</td><td style="padding:5px 0;">new line</td></tr>
+          <tr><td style="padding:5px 0;color:#999;">Tab</td><td style="padding:5px 0;">indent</td></tr>
+          <tr><td style="padding:5px 0;color:#999;">⇧ Tab</td><td style="padding:5px 0;">unindent</td></tr>
+          <tr><td style="padding:5px 0;color:#999;">⌘ Z</td><td style="padding:5px 0;">undo</td></tr>
+          <tr><td style="padding:5px 0;color:#999;border-top:1px solid #eee;">↓</td><td style="padding:5px 0;border-top:1px solid #eee;">export backup</td></tr>
+          <tr><td style="padding:5px 0;color:#999;">↑</td><td style="padding:5px 0;">import backup</td></tr>
+          <tr><td style="padding:5px 0;color:#999;">**</td><td style="padding:5px 0;">import from Are.na</td></tr>
+          <tr><td style="padding:5px 0;color:#999;">Ø</td><td style="padding:5px 0;">clear all references</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <div class="modal-overlay" id="arena-modal">
     <div class="modal">
@@ -1479,6 +1499,16 @@
       reader.readAsText(file);
     }
 
+    // Help modal
+    function closeHelpModal() {
+      document.getElementById('help-modal').classList.remove('visible');
+      localStorage.setItem('helpSeen', '1');
+    }
+
+    document.getElementById('help-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('help-modal')) closeHelpModal();
+    });
+
     // Init
     async function init() {
       await initDB();
@@ -1488,6 +1518,9 @@
       renderTabs();
       renderLines();
       renderReferences();
+      if (!localStorage.getItem('helpSeen')) {
+        document.getElementById('help-modal').classList.add('visible');
+      }
     }
 
     init();
