@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <script defer src="/_vercel/analytics/script.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Light Research
@@ -567,7 +572,7 @@
         <table style="width:50%;border-collapse:collapse;font-size:13px;color:#555;">
           <tbody>
             <tr>
-              <td style="padding:5px 0;color:#999;width:48px;#eee;">↓</td>
+              <td style="padding:5px 0;color:#999;width:48px;">↓</td>
               <td style="padding:5px 0;">export as JSON</td>
             </tr>
             <tr><td style="padding:5px 0;color:#999;">↑</td><td style="padding:5px 0;">import JSON</td></tr>
@@ -593,6 +598,39 @@
   </div>
 
   <script>
+    // Vercel Web Analytics — custom events (requires Web Analytics enabled on the project)
+    function analyticsTrack(name, data) {
+      try {
+        if (typeof window.va !== 'function') return;
+        if (data && Object.keys(data).length) {
+          window.va('event', { name: name, data: data });
+        } else {
+          window.va('event', { name: name });
+        }
+      } catch (_) {}
+    }
+
+    const visitStartedAt = Date.now();
+    let visitSummarySent = false;
+
+    function outlineLineCountTotal() {
+      if (!Array.isArray(sessions)) return 0;
+      return sessions.reduce((n, s) => n + ((s.lines && s.lines.length) || 0), 0);
+    }
+
+    function sendVisitSummary() {
+      if (visitSummarySent) return;
+      visitSummarySent = true;
+      const duration_sec = Math.round((Date.now() - visitStartedAt) / 1000);
+      const outline_lines = outlineLineCountTotal();
+      analyticsTrack('Visit Summary', { duration_sec: duration_sec, outline_lines: outline_lines });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') sendVisitSummary();
+    });
+    window.addEventListener('pagehide', sendVisitSummary);
+
     // IndexedDB setup
     const DB_NAME = 'textRefsDB';
     const DB_VERSION = 1;
@@ -1272,6 +1310,7 @@
 
     // Are.na import
     function showArenaModal() {
+      analyticsTrack('Arena Import Opened');
       document.getElementById('arena-modal').classList.add('visible');
       document.getElementById('arena-channel').focus();
     }
@@ -1285,6 +1324,7 @@
       const channelInput = document.getElementById('arena-channel');
       const raw = channelInput.value.trim();
       if (!raw) return;
+      analyticsTrack('Arena Import Submitted');
       // Extract slug from full Are.na URL (e.g. https://www.are.na/user/channel-slug)
       const match = raw.match(/are\.na\/[^/]+\/([^/?#]+)/);
       const slug = match ? match[1] : raw;
@@ -1327,6 +1367,7 @@
           }
         }
 
+        analyticsTrack('Arena Import Completed');
         hideArenaModal();
       } catch (err) {
         alert('Error importing channel: ' + err.message);
