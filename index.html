@@ -424,7 +424,7 @@
       padding: 10px 20px;
       cursor: pointer;
       font-size: 14px;
-      color: #666;
+      color: #bababa;
       border-right: 2px dotted #ccc;
       position: relative;
     }
@@ -434,7 +434,7 @@
     }
 
     .tab.active {
-      color: #666;
+      color: #999;
     }
 
     .tab-add {
@@ -507,16 +507,16 @@
     }
 
     .modal-actions .confirm {
-      background: #333;
+      background: #666;
       color: #fff;
-      border-color: #333;
+      border: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="panel left-panel">
-      <div class="panel-title">Text</div>
+      <div class="panel-title">Outline</div>
       <div id="lines-container"></div>
       <div class="add-line-btn" onclick="addLine()">+ Add line</div>
     </div>
@@ -529,10 +529,10 @@
     <div class="panel right-panel">
       <div class="panel-title">
         <span>Unsorted</span>
-        <span style="display:flex; gap:8px; margin-left:auto;">
+        <span style="display:flex; gap:8px; margin-left:auto; align-items:center;">
           <button onclick="exportData()" title="Export backup" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">↓</button>
           <button onclick="document.getElementById('import-input').click()" title="Import backup" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">↑</button>
-          <button onclick="showArenaModal()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">**</button>
+          <button onclick="showArenaModal()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;display:flex;align-items:center;">✶✶</button>
           <button onclick="clearAllReferences()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">Ø</button>
         </span>
         <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
@@ -548,8 +548,8 @@
 
   <div class="modal-overlay" id="arena-modal">
     <div class="modal">
-      <h3>Import from Are.na</h3>
-      <input type="text" id="arena-channel" placeholder="Channel slug (e.g., my-channel-name)">
+      <h3 style="color:#666;">Import from Are.na</h3>
+      <input type="text" id="arena-channel" placeholder="URL or slug (e.g., are.na/user/channel)">
       <div class="modal-actions">
         <button class="cancel" onclick="hideArenaModal()">Cancel</button>
         <button class="confirm" onclick="importArena()">Import</button>
@@ -1248,8 +1248,11 @@
 
     async function importArena() {
       const channelInput = document.getElementById('arena-channel');
-      const slug = channelInput.value.trim();
-      if (!slug) return;
+      const raw = channelInput.value.trim();
+      if (!raw) return;
+      // Extract slug from full Are.na URL (e.g. https://www.are.na/user/channel-slug)
+      const match = raw.match(/are\.na\/[^/]+\/([^/?#]+)/);
+      const slug = match ? match[1] : raw;
 
       const confirmBtn = document.querySelector('#arena-modal .confirm');
       confirmBtn.textContent = 'Importing...';
