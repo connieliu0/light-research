@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-LES65LPN1Y"></script>
   <script>
-    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LES65LPN1Y');
   </script>
-  <script defer src="/_vercel/insights/script.js"></script>
-  <script defer src="/_vercel/analytics/script.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Light Research
@@ -598,15 +602,16 @@
   </div>
 
   <script>
-    // Vercel Web Analytics — custom events (requires Web Analytics enabled on the project)
+    function analyticsEventSlug(name) {
+      const slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+      return (slug || 'custom_event').slice(0, 40);
+    }
+
     function analyticsTrack(name, data) {
       try {
-        if (typeof window.va !== 'function') return;
-        if (data && Object.keys(data).length) {
-          window.va('event', { name: name, data: data });
-        } else {
-          window.va('event', { name: name });
-        }
+        if (typeof gtag !== 'function') return;
+        const payload = data && typeof data === 'object' ? data : {};
+        gtag('event', analyticsEventSlug(name), payload);
       } catch (_) {}
     }
 
