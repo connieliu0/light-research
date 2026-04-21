@@ -428,18 +428,96 @@
       left: 0;
       right: 0;
       display: flex;
+      flex-wrap: nowrap;
+      align-items: stretch;
       background: #fffef9;
       border-top: 2px dotted #ccc;
       padding: 0 20px;
     }
 
     .tab {
-      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 12px 10px 20px;
       cursor: pointer;
       font-size: 14px;
       color: #bababa;
       border-right: 2px dotted #ccc;
       position: relative;
+      min-width: 0;
+    }
+
+    .tab.tab-editing {
+      flex: 0 0 auto;
+      width: max-content;
+      min-width: max-content;
+    }
+
+    .tab-label {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tab-rename-wrap {
+      display: inline-grid;
+      vertical-align: middle;
+      width: max-content;
+      min-width: 0;
+      flex: 0 0 auto;
+    }
+
+    .tab-rename-wrap .tab-rename-sizer,
+    .tab-rename-wrap .tab-rename-input {
+      grid-area: 1 / 1;
+      margin: 0;
+      padding: 0;
+      border: none;
+      font-size: 14px;
+      font-family: inherit;
+      line-height: 1.2;
+      min-width: 0;
+    }
+
+    .tab-rename-sizer {
+      visibility: hidden;
+      white-space: pre;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .tab-rename-input {
+      width: 100%;
+      min-width: 0;
+      outline: none;
+      background: transparent;
+      color: inherit;
+    }
+
+    .tab-close {
+      flex: 0 0 auto;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 4px;
+      margin: 0 -2px 0 0;
+      color: #ccc;
+      font-family: inherit;
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    .tab:hover .tab-close {
+      opacity: 1;
+    }
+
+    .tab-close:hover {
+      color: #666;
     }
 
     .tab:hover {
@@ -811,7 +889,7 @@
     });
 
     // App State
-    const MAX_SESSIONS = 2;
+    const MAX_SESSIONS = 3;
     let sessions = [];
     let currentSessionIndex = 0;
 
@@ -1511,12 +1589,32 @@
     // Tabs
     function renameSession(idx, tabEl) {
       const session = sessions[idx];
+      tabEl.classList.add('tab-editing');
+
+      const labelEl = tabEl.querySelector('.tab-label');
+      const closeEl = tabEl.querySelector('.tab-close');
+      if (closeEl) closeEl.style.visibility = 'hidden';
+
+      const wrap = document.createElement('span');
+      wrap.className = 'tab-rename-wrap';
+      const sizer = document.createElement('span');
+      sizer.className = 'tab-rename-sizer';
+      sizer.setAttribute('aria-hidden', 'true');
       const input = document.createElement('input');
       input.type = 'text';
+      input.className = 'tab-rename-input';
+      input.size = 1;
       input.value = session.name;
-      input.style.cssText = 'border:none;outline:none;background:transparent;font-size:14px;font-family:inherit;color:inherit;width:100%;padding:0;';
-      tabEl.textContent = '';
-      tabEl.appendChild(input);
+      wrap.appendChild(sizer);
+      wrap.appendChild(input);
+      labelEl.replaceWith(wrap);
+
+      function syncRenameWidth() {
+        sizer.textContent = input.value || '\u00a0';
+      }
+      syncRenameWidth();
+      input.addEventListener('input', syncRenameWidth);
+
       input.focus();
       input.select();
 
@@ -1529,10 +1627,32 @@
 
       input.onblur = commit;
       input.onkeydown = (e) => {
-        if (e.key === 'Enter') { input.blur(); }
-        else if (e.key === 'Escape') { input.value = session.name; input.blur(); }
+        if (e.key === 'Enter') {
+          input.blur();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          input.onblur = null;
+          renderTabs();
+        }
         e.stopPropagation();
       };
+    }
+
+    function deleteSession(idx) {
+      if (sessions.length <= 1) return;
+      pushUndo();
+      sessions.splice(idx, 1);
+      if (currentSessionIndex >= sessions.length) {
+        currentSessionIndex = sessions.length - 1;
+      } else if (idx < currentSessionIndex) {
+        currentSessionIndex--;
+      }
+      selectedLineId = null;
+      document.getElementById('middle-panel').classList.remove('expanded');
+      saveData();
+      renderTabs();
+      renderLines();
+      renderReferences();
     }
 
     function renderTabs() {
@@ -1542,9 +1662,35 @@
       sessions.forEach((session, idx) => {
         const tab = document.createElement('div');
         tab.className = 'tab' + (idx === currentSessionIndex ? ' active' : '');
-        tab.textContent = session.name;
-        tab.onclick = () => switchSession(idx);
-        tab.ondblclick = (e) => { e.stopPropagation(); renameSession(idx, tab); };
+
+        const label = document.createElement('span');
+        label.className = 'tab-label';
+        label.textContent = session.name;
+        tab.appendChild(label);
+
+        if (sessions.length > 1) {
+          const closeBtn = document.createElement('button');
+          closeBtn.type = 'button';
+          closeBtn.className = 'tab-close';
+          closeBtn.textContent = '×';
+          closeBtn.setAttribute('aria-label', 'Delete session');
+          closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteSession(idx);
+          };
+          tab.appendChild(closeBtn);
+        }
+
+        tab.onclick = (e) => {
+          if (e.target.closest('.tab-close')) return;
+          switchSession(idx);
+        };
+        tab.ondblclick = (e) => {
+          if (e.target.closest('.tab-close')) return;
+          e.preventDefault();
+          renameSession(idx, tab);
+        };
+
         tabBar.appendChild(tab);
       });
 
