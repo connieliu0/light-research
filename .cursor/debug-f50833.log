@@ -1,0 +1,3 @@
+{"sessionId":"f50833","location":"index.html:addLine","message":"addLine entry","data":{"sessionsLen":2,"currentIdx":0,"hasSlot":true,"dbOk":true,"helpOpen":false},"timestamp":1777766433062,"runId":"pre-fix","hypothesisId":"H1"}
+{"sessionId":"f50833","location":"index.html:addLine","message":"after push","data":{"pushedToEphemeral":false,"realLinesLen":18},"timestamp":1777766433062,"runId":"pre-fix","hypothesisId":"H1"}
+{"sessionId":"f50833","location":"index.html:lineEnter","message":"Enter new line","data":{"idx":17,"pushedToEphemeral":false,"realLinesLen":19},"timestamp":1777766445570,"runId":"pre-fix","hypothesisId":"H1"}

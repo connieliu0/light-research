@@ -233,7 +233,7 @@
     }
 
     .add-line-btn {
-      padding: 10px 20px;
+      padding: 8px 20px;
       color: #999;
       cursor: pointer;
       font-size: 14px;
@@ -678,7 +678,12 @@
 <body>
   <div class="container">
     <div class="panel left-panel">
-      <div class="panel-title">Outline</div>
+      <div class="panel-title">
+        <span>Outline</span>
+        <span style="display:flex; gap:8px; margin-left:auto; align-items:center;">
+          <button type="button" onclick="exportOutlineHtml()" title="Export outline as HTML" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;font-family:ui-monospace,monospace;">&lt;/&gt;</button>
+        </span>
+      </div>
       <div id="lines-container"></div>
       <div class="add-line-btn" onclick="addLine()">+ Add line</div>
     </div>
@@ -731,6 +736,10 @@
         <!-- Second column: after border-top -->
         <table style="width:50%;border-collapse:collapse;font-size:13px;color:#555;">
           <tbody>
+            <tr>
+              <td style="padding:5px 0;color:#999;width:48px;font-family:ui-monospace,monospace;">&lt;/&gt;</td>
+              <td style="padding:5px 0;">export outline as HTML</td>
+            </tr>
             <tr>
               <td style="padding:5px 0;color:#999;width:48px;">↓</td>
               <td style="padding:5px 0;">export as JSON</td>
@@ -1761,6 +1770,165 @@
       const a = document.createElement('a');
       a.href = url;
       a.download = 'light-research-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Escape session title only (outline line HTML is copied as in the editor; self-export).
+    function escapeHtmlForTitle(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function escapeHtmlTextNode(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function escapeHtmlAttr(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function buildReferenceMap(references) {
+      const m = new Map();
+      (references || []).forEach((r) => {
+        if (r && r.id != null) m.set(r.id, r);
+      });
+      return m;
+    }
+
+    function isDisallowedExportHref(href) {
+      const h = String(href).trim().toLowerCase();
+      return h.startsWith('javascript:') || h.startsWith('vbscript:');
+    }
+
+    function formatReferenceExportItem(ref) {
+      if (!ref) return '';
+      const raw = ref.content == null ? '' : String(ref.content);
+      const label = escapeHtmlTextNode(raw);
+      const effectiveType = ref.type === 'text' ? detectRefType(raw.trim()) : ref.type;
+
+      if (effectiveType === 'url') {
+        if (isDisallowedExportHref(raw)) {
+          return '<li class="outline-ref outline-ref--text">' + label + '</li>';
+        }
+        const escHref = escapeHtmlAttr(raw);
+        return '<li class="outline-ref outline-ref--url"><a href="' + escHref + '" target="_blank" rel="noopener noreferrer">' + label + '</a></li>';
+      }
+      if (effectiveType === 'image') {
+        if (isDisallowedExportHref(raw)) {
+          return '<li class="outline-ref outline-ref--text">' + label + '</li>';
+        }
+        const esc = escapeHtmlAttr(raw);
+        return '<li class="outline-ref outline-ref--image"><a href="' + esc + '" target="_blank" rel="noopener noreferrer"><img src="' + esc + '" alt="" loading="lazy"></a></li>';
+      }
+      return '<li class="outline-ref outline-ref--text">' + label + '</li>';
+    }
+
+    function renderLineRefsHtml(line, refMap) {
+      const ids = line.referenceIds || [];
+      if (!ids.length) return '';
+      const items = ids.map((id) => formatReferenceExportItem(refMap.get(id))).filter(Boolean).join('');
+      if (!items) return '';
+      return '<ul class="outline-refs">' + items + '</ul>';
+    }
+
+    function outlineLineTextIsEmpty(html) {
+      const d = document.createElement('div');
+      d.innerHTML = html || '';
+      return !d.textContent.trim();
+    }
+
+    function linesToOutlineTree(lines) {
+      const filtered = (lines || []).filter((l) => !outlineLineTextIsEmpty(l.text));
+      const root = [];
+      const stack = [];
+      for (const line of filtered) {
+        const indent = line.indent || 0;
+        const node = { line, children: [] };
+        while (stack.length && stack[stack.length - 1].indent >= indent) {
+          stack.pop();
+        }
+        if (stack.length === 0) {
+          root.push(node);
+        } else {
+          stack[stack.length - 1].node.children.push(node);
+        }
+        stack.push({ indent, node });
+      }
+      return root;
+    }
+
+    // Tree depths 0–2: details/summary only when node has children; leaves use .outline-leaf. Depth 3+: .outline-deeper.
+    function renderOutlineTreeToHtml(nodes, treeDepth, refMap) {
+      if (!nodes || !nodes.length) return '';
+      return nodes.map((node) => {
+        const text = node.line.text || '';
+        const refsHtml = renderLineRefsHtml(node.line, refMap);
+        const childrenHtml = renderOutlineTreeToHtml(node.children, treeDepth + 1, refMap);
+        const hasChildren = node.children && node.children.length > 0;
+        if (treeDepth < 3) {
+          if (hasChildren) {
+            return '<details><summary>' + text + '</summary><div class="outline-children">' + refsHtml + childrenHtml + '</div></details>';
+          }
+          return '<div class="outline-leaf">' + text + refsHtml + '</div>';
+        }
+        return '<div class="outline-deeper"><div class="outline-line">' + text + '</div>' + refsHtml + childrenHtml + '</div>';
+      }).join('');
+    }
+
+    function exportOutlineHtml() {
+      const session = getCurrentSession();
+      const refMap = buildReferenceMap(session.references);
+      const tree = linesToOutlineTree(session.lines);
+      const inner = renderOutlineTreeToHtml(tree, 0, refMap);
+      const sessionName = session.name || 'Outline';
+      const titleText = 'Light Research — ' + sessionName;
+      const styles = [
+        '* { box-sizing: border-box; }',
+        "body { font-family: Georgia, 'Times New Roman', serif; margin: 2rem auto; max-width: 42rem; padding: 0 1.25rem; color: #222; background: #fffef9; line-height: 1.45; }",
+        'h1.export-title { font-size: 1.1rem; font-weight: normal; color: #666; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 1.5rem; border-bottom: 1px dotted #ccc; padding-bottom: 0.5rem; }',
+        'details { margin: 0.35rem 0; }',
+        'summary { cursor: pointer; color: #333; }',
+        '.outline-leaf { margin: 0.35rem 0; color: #333; padding-left: 0.15rem; }',
+        '.outline-children { margin: 0.25rem 0 0.5rem 0.85rem; padding-left: 0.35rem; border-left: 1px solid #e0ddd0; }',
+        '.outline-deeper { margin: 0.35rem 0 0.35rem 0.75rem; padding-left: 0.5rem; border-left: 1px dashed #ddd; }',
+        '.outline-line { margin-bottom: 0.35rem; }',
+        '.outline-empty { color: #999; font-style: italic; }',
+        '.outline-refs { list-style: none; margin: 0.35rem 0 0.15rem 0; padding: 0; font-size: 0.88rem; }',
+        '.outline-ref { margin: 0.2rem 0; padding-left: 0.35rem; border-left: 2px solid #e8e4d8; }',
+        '.outline-ref a { color: #555; text-decoration: underline; text-underline-offset: 2px; }',
+        '.outline-ref a:hover { color: #222; }',
+        '.outline-ref--image img { max-width: 100%; max-height: 140px; display: block; margin-top: 0.2rem; border-radius: 2px; }'
+      ].join('\n');
+
+      const bodyInner = inner || '<p class="outline-empty">No outline lines to export.</p>';
+      const html = '<!DOCTYPE html>\n' +
+        '<html lang="en">\n<head>\n' +
+        '<meta charset="utf-8">\n' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+        '<title>' + escapeHtmlForTitle(titleText) + '</title>\n' +
+        '<style>\n' + styles + '\n</style>\n' +
+        '</head>\n<body>\n' +
+        '<h1 class="export-title">' + escapeHtmlForTitle(sessionName) + '</h1>\n' +
+        bodyInner + '\n' +
+        '</body>\n</html>';
+
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'light-research-outline-' + new Date().toISOString().slice(0, 10) + '.html';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
