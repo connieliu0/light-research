@@ -2733,7 +2733,9 @@
 
     function appendPublishedShareUi(html) {
       const shareStyles = [
-        '.lr-qr-btn { position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 9000; font-family: Georgia, "Times New Roman", serif; font-size: 12px; letter-spacing: 0.04em; color: #666; background: #fffef9; border: 1px solid #ddd; border-radius: 999px; padding: 0.45rem 0.85rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }',
+        '.export-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 1.5rem; border-bottom: 1px dotted #ccc; padding-bottom: 0.5rem; flex-shrink: 0; }',
+        '.export-header .export-title { margin: 0; border-bottom: none; padding-bottom: 0; flex: 1; min-width: 0; }',
+        '.lr-qr-btn { flex-shrink: 0; font-family: Georgia, "Times New Roman", serif; font-size: 11px; letter-spacing: 0.04em; color: #666; background: transparent; border: 1px solid #ddd; border-radius: 999px; padding: 0.3rem 0.65rem; cursor: pointer; white-space: nowrap; }',
         '.lr-qr-btn:hover { color: #333; border-color: #ccc; }',
         '.lr-qr-overlay { position: fixed; inset: 0; z-index: 9100; display: flex; align-items: center; justify-content: center; padding: 1.5rem; background: rgba(0,0,0,0.35); }',
         '.lr-qr-overlay[hidden] { display: none; }',
@@ -2745,8 +2747,13 @@
         '.lr-qr-url { margin: 0.85rem 0 0; font-size: 0.72rem; color: #999; word-break: break-all; line-height: 1.35; }'
       ].join('\n');
 
+      const qrButton = '<button type="button" class="lr-qr-btn" id="lr-qr-btn" aria-label="Show QR code">QR code</button>';
+      const withHeader = html.replace(
+        /(<h1 class="export-title">[\s\S]*?<\/h1>)/,
+        '<div class="export-header">$1' + qrButton + '</div>'
+      );
+
       const shareMarkup =
-        '<button type="button" class="lr-qr-btn" id="lr-qr-btn" aria-label="Show QR code">QR code</button>' +
         '<div class="lr-qr-overlay" id="lr-qr-overlay" hidden>' +
         '<div class="lr-qr-modal" role="dialog" aria-modal="true" aria-labelledby="lr-qr-title">' +
         '<button type="button" class="lr-qr-close" id="lr-qr-close" aria-label="Close">&times;</button>' +
@@ -2773,7 +2780,7 @@
         '})();<\/script>';
 
       const injection = '<style>\n' + shareStyles + '\n</style>\n' + shareMarkup + '\n' + shareScript;
-      return html.replace('</body>', injection + '\n</body>');
+      return withHeader.replace('</body>', injection + '\n</body>');
     }
 
     function showPublishModal(url, kind) {
