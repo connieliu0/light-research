@@ -607,6 +607,256 @@
       display: none;
     }
 
+    /* Empty state chooser */
+    .empty-state-chooser {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100% - 60px);
+      padding: 40px 20px;
+    }
+
+    .empty-state-title {
+      font-size: 14px;
+      color: #999;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    .empty-state-options {
+      display: flex;
+      gap: 20px;
+    }
+
+    .empty-state-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 32px;
+      border: 2px dashed #ccc;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      min-width: 140px;
+    }
+
+    .empty-state-option:hover {
+      border-color: #888;
+      background: rgba(0,0,0,0.02);
+    }
+
+    .empty-state-option-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+      color: #999;
+    }
+
+    .empty-state-option-label {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .empty-state-option-desc {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    /* Map view */
+    .map-view {
+      display: none;
+      flex-direction: column;
+      height: calc(100% - 40px);
+      padding: 0 20px 20px;
+    }
+
+    .map-view.active {
+      display: flex;
+    }
+
+    .map-axis-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .map-axis-input {
+      font-family: inherit;
+      font-size: 12px;
+      color: #666;
+      border: none;
+      border-bottom: 1px dashed #ccc;
+      background: none;
+      outline: none;
+      padding: 2px 4px;
+      width: 120px;
+      text-align: center;
+    }
+
+    .map-axis-input::placeholder {
+      color: #bbb;
+      font-style: italic;
+    }
+
+    .map-axis-input:focus {
+      border-bottom-color: #888;
+    }
+
+    .map-container {
+      flex: 1;
+      position: relative;
+      border: 1px solid #ddd;
+      background: 
+        linear-gradient(to right, #e8e8e8 1px, transparent 1px),
+        linear-gradient(to bottom, #e8e8e8 1px, transparent 1px);
+      background-size: 40px 40px;
+      background-color: #fafaf5;
+      overflow: hidden;
+    }
+
+    .map-container.dragover {
+      background-color: #f5f5f0;
+      border-color: #888;
+    }
+
+    /* Map axes */
+    .map-axis-x {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: #ccc;
+      pointer-events: none;
+    }
+
+    .map-axis-y {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: #ccc;
+      pointer-events: none;
+    }
+
+    .map-axis-label {
+      position: absolute;
+      font-size: 10px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .map-axis-label-x-min {
+      left: 8px;
+      top: calc(50% + 6px);
+    }
+
+    .map-axis-label-x-max {
+      right: 8px;
+      top: calc(50% + 6px);
+    }
+
+    .map-axis-label-y-min {
+      left: calc(50% + 6px);
+      bottom: 8px;
+    }
+
+    .map-axis-label-y-max {
+      left: calc(50% + 6px);
+      top: 8px;
+    }
+
+    /* Map point */
+    .map-point {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: grab;
+      z-index: 1;
+    }
+
+    .map-point:active {
+      cursor: grabbing;
+    }
+
+    .map-point-dot {
+      width: 12px;
+      height: 12px;
+      background: #666;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .map-point-label {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #555;
+      white-space: nowrap;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      background: rgba(255,254,249,0.9);
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+
+    .map-point:hover .map-point-label {
+      max-width: none;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .map-point-delete {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 16px;
+      height: 16px;
+      border: none;
+      background: #c00;
+      color: #fff;
+      font-size: 12px;
+      line-height: 14px;
+      border-radius: 50%;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .map-point:hover .map-point-delete {
+      opacity: 1;
+    }
+
+    .map-drop-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 14px;
+      color: #bbb;
+      font-style: italic;
+      pointer-events: none;
+    }
+
+    .map-container.has-points .map-drop-hint {
+      display: none;
+    }
+
+    /* Outline view toggle */
+    .outline-view {
+      display: block;
+    }
+
+    .outline-view.hidden {
+      display: none;
+    }
+
     @media (max-width: 768px) {
       .mobile-only-note {
         display: block !important;
@@ -678,14 +928,60 @@
 <body>
   <div class="container">
     <div class="panel left-panel">
-      <div class="panel-title">
-        <span>Outline</span>
-        <span style="display:flex; gap:8px; margin-left:auto; align-items:center;">
-          <button type="button" onclick="exportOutlineHtml()" title="Export outline as HTML" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;font-family:ui-monospace,monospace;">&lt;/&gt;</button>
-        </span>
+      <!-- Empty state chooser -->
+      <div class="empty-state-chooser" id="empty-state-chooser" style="display:none;">
+        <div class="empty-state-title">Choose a view type for this session</div>
+        <div class="empty-state-options">
+          <div class="empty-state-option" onclick="setSessionType('outline')">
+            <div class="empty-state-option-icon">≡</div>
+            <div class="empty-state-option-label">Outline</div>
+            <div class="empty-state-option-desc">Hierarchical list<br>with indentation</div>
+          </div>
+          <div class="empty-state-option" onclick="setSessionType('map')">
+            <div class="empty-state-option-icon">◎</div>
+            <div class="empty-state-option-label">Map</div>
+            <div class="empty-state-option-desc">2D plot with<br>X and Y axes</div>
+          </div>
+        </div>
       </div>
-      <div id="lines-container"></div>
-      <div class="add-line-btn" onclick="addLine()">+ Add line</div>
+
+      <!-- Outline view -->
+      <div class="outline-view" id="outline-view">
+        <div class="panel-title">
+          <span>Outline</span>
+          <span style="display:flex; gap:8px; margin-left:auto; align-items:center;">
+            <button type="button" onclick="exportOutlineHtml()" title="Export outline as HTML" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;font-family:ui-monospace,monospace;">&lt;/&gt;</button>
+            <button type="button" onclick="exportOutlineHtmlTable()" title="Export outline as HTML table" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;">▦</button>
+            <button type="button" id="publish-outline-btn" onclick="publishOutline()" title="Publish outline as link" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;font-family:inherit;">↗</button>
+          </span>
+        </div>
+        <div id="lines-container"></div>
+        <div class="add-line-btn" onclick="addLine()">+ Add line</div>
+      </div>
+
+      <!-- Map view -->
+      <div class="map-view" id="map-view">
+        <div class="panel-title">
+          <span>Map</span>
+          <span style="display:flex; gap:8px; margin-left:auto; align-items:center;">
+            <button type="button" onclick="exportMapAsImage()" title="Export map as image" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;">⤓</button>
+          </span>
+        </div>
+        <div class="map-axis-labels">
+          <input type="text" class="map-axis-input" id="map-x-label" placeholder="X axis label..." oninput="saveMapAxisLabels()">
+          <input type="text" class="map-axis-input" id="map-y-label" placeholder="Y axis label..." oninput="saveMapAxisLabels()">
+        </div>
+        <div class="map-container" id="map-container">
+          <div class="map-axis-x"></div>
+          <div class="map-axis-y"></div>
+          <span class="map-axis-label map-axis-label-x-min" id="map-label-x-min">−</span>
+          <span class="map-axis-label map-axis-label-x-max" id="map-label-x-max">+</span>
+          <span class="map-axis-label map-axis-label-y-min" id="map-label-y-min">−</span>
+          <span class="map-axis-label map-axis-label-y-max" id="map-label-y-max">+</span>
+          <div class="map-drop-hint">Drop references here to plot</div>
+          <div id="map-points"></div>
+        </div>
+      </div>
     </div>
 
     <div class="panel middle-panel" id="middle-panel">
@@ -741,6 +1037,14 @@
               <td style="padding:5px 0;">export outline as HTML</td>
             </tr>
             <tr>
+              <td style="padding:5px 0;color:#999;width:48px;">▦</td>
+              <td style="padding:5px 0;">export outline as HTML table</td>
+            </tr>
+            <tr>
+              <td style="padding:5px 0;color:#999;width:48px;">↗</td>
+              <td style="padding:5px 0;">publish outline as link</td>
+            </tr>
+            <tr>
               <td style="padding:5px 0;color:#999;width:48px;">↓</td>
               <td style="padding:5px 0;">export as JSON</td>
             </tr>
@@ -762,6 +1066,19 @@
       <div class="modal-actions">
         <button class="cancel" onclick="hideArenaModal()">Cancel</button>
         <button class="confirm" onclick="importArena()">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="publish-modal">
+    <div class="modal" style="width:420px;position:relative;">
+      <button onclick="hidePublishModal()" style="position:absolute;top:12px;right:12px;background:none;border:none;cursor:pointer;font-size:18px;color:#bbb;padding:0;line-height:1;">×</button>
+      <h3 style="color:#666;">Published</h3>
+      <p style="color:#666;font-size:14px;line-height:1.4;margin-bottom:12px;">Share this link — anyone with it can view your outline.</p>
+      <input type="text" id="publish-url-input" readonly style="margin-bottom:12px;background:#f9f9f5;color:#444;cursor:text;">
+      <div class="modal-actions">
+        <button class="cancel" onclick="hidePublishModal()">Close</button>
+        <button class="confirm" onclick="copyPublishUrl()">Copy link</button>
       </div>
     </div>
   </div>
@@ -887,6 +1204,7 @@
       renderTabs();
       renderLines();
       renderReferences();
+      updateViewForSession();
     }
 
     document.addEventListener('keydown', (e) => {
@@ -904,6 +1222,205 @@
 
     function getCurrentSession() {
       return sessions[currentSessionIndex] || { lines: [], references: [] };
+    }
+
+    // Session type management (outline vs map)
+    function isSessionEmpty(session) {
+      const s = session || getCurrentSession();
+      const hasLines = s.lines && s.lines.length > 0;
+      const hasMapPoints = s.mapPoints && s.mapPoints.length > 0;
+      const hasType = s.type && s.type !== 'none';
+      return !hasLines && !hasMapPoints && !hasType;
+    }
+
+    function setSessionType(type) {
+      const session = getCurrentSession();
+      session.type = type;
+      if (type === 'map' && !session.mapPoints) {
+        session.mapPoints = [];
+        session.mapAxisX = '';
+        session.mapAxisY = '';
+      }
+      saveData();
+      updateViewForSession();
+    }
+
+    function updateViewForSession() {
+      const session = getCurrentSession();
+      const chooser = document.getElementById('empty-state-chooser');
+      const outlineView = document.getElementById('outline-view');
+      const mapView = document.getElementById('map-view');
+
+      if (isSessionEmpty(session)) {
+        chooser.style.display = 'flex';
+        outlineView.classList.add('hidden');
+        mapView.classList.remove('active');
+      } else if (session.type === 'map') {
+        chooser.style.display = 'none';
+        outlineView.classList.add('hidden');
+        mapView.classList.add('active');
+        renderMapPoints();
+        loadMapAxisLabels();
+      } else {
+        chooser.style.display = 'none';
+        outlineView.classList.remove('hidden');
+        mapView.classList.remove('active');
+      }
+    }
+
+    // Map view functions
+    function loadMapAxisLabels() {
+      const session = getCurrentSession();
+      document.getElementById('map-x-label').value = session.mapAxisX || '';
+      document.getElementById('map-y-label').value = session.mapAxisY || '';
+    }
+
+    function saveMapAxisLabels() {
+      const session = getCurrentSession();
+      session.mapAxisX = document.getElementById('map-x-label').value;
+      session.mapAxisY = document.getElementById('map-y-label').value;
+      saveData();
+    }
+
+    function getRefTitle(ref) {
+      if (!ref) return 'Unknown';
+      if (ref.type === 'url') {
+        try {
+          const url = new URL(ref.content);
+          return url.hostname.replace('www.', '') + url.pathname.slice(0, 30);
+        } catch {
+          return ref.content.slice(0, 40);
+        }
+      } else if (ref.type === 'image') {
+        return '[Image]';
+      }
+      return ref.content.slice(0, 40) || 'Text';
+    }
+
+    function renderMapPoints() {
+      const session = getCurrentSession();
+      const container = document.getElementById('map-container');
+      const pointsContainer = document.getElementById('map-points');
+      pointsContainer.innerHTML = '';
+
+      const points = session.mapPoints || [];
+      container.classList.toggle('has-points', points.length > 0);
+
+      points.forEach((point, idx) => {
+        const ref = session.references.find(r => r.id === point.refId);
+        const title = getRefTitle(ref);
+
+        const pointEl = document.createElement('div');
+        pointEl.className = 'map-point';
+        pointEl.style.left = point.x + '%';
+        pointEl.style.top = point.y + '%';
+        pointEl.dataset.idx = idx;
+
+        const dot = document.createElement('div');
+        dot.className = 'map-point-dot';
+        pointEl.appendChild(dot);
+
+        const label = document.createElement('div');
+        label.className = 'map-point-label';
+        label.textContent = title;
+        pointEl.appendChild(label);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'map-point-delete';
+        deleteBtn.textContent = '×';
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          removeMapPoint(idx);
+        };
+        pointEl.appendChild(deleteBtn);
+
+        // Make draggable within map
+        pointEl.onmousedown = (e) => {
+          if (e.target === deleteBtn) return;
+          e.preventDefault();
+          const rect = container.getBoundingClientRect();
+          
+          const onMove = (moveE) => {
+            const newX = ((moveE.clientX - rect.left) / rect.width) * 100;
+            const newY = ((moveE.clientY - rect.top) / rect.height) * 100;
+            pointEl.style.left = Math.max(0, Math.min(100, newX)) + '%';
+            pointEl.style.top = Math.max(0, Math.min(100, newY)) + '%';
+          };
+
+          const onUp = (upE) => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            const finalX = ((upE.clientX - rect.left) / rect.width) * 100;
+            const finalY = ((upE.clientY - rect.top) / rect.height) * 100;
+            point.x = Math.max(0, Math.min(100, finalX));
+            point.y = Math.max(0, Math.min(100, finalY));
+            saveData();
+          };
+
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        };
+
+        pointsContainer.appendChild(pointEl);
+      });
+    }
+
+    function addMapPoint(refId, x, y) {
+      const session = getCurrentSession();
+      if (!session.mapPoints) session.mapPoints = [];
+      
+      // Check if ref is already on map
+      if (session.mapPoints.some(p => p.refId === refId)) return;
+      
+      session.mapPoints.push({ refId, x, y });
+      saveData();
+      renderMapPoints();
+      renderReferences();
+    }
+
+    function removeMapPoint(idx) {
+      pushUndo();
+      const session = getCurrentSession();
+      session.mapPoints.splice(idx, 1);
+      saveData();
+      renderMapPoints();
+      renderReferences();
+    }
+
+    function initMapDragDrop() {
+      const container = document.getElementById('map-container');
+
+      container.ondragover = (e) => {
+        if (e.dataTransfer.types.includes('text/plain')) {
+          e.preventDefault();
+          container.classList.add('dragover');
+        }
+      };
+
+      container.ondragleave = (e) => {
+        if (!container.contains(e.relatedTarget)) {
+          container.classList.remove('dragover');
+        }
+      };
+
+      container.ondrop = (e) => {
+        e.preventDefault();
+        container.classList.remove('dragover');
+
+        const refId = e.dataTransfer.getData('text/plain');
+        if (!refId) return;
+
+        const rect = container.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+        pushUndo();
+        addMapPoint(refId, x, y);
+      };
+    }
+
+    function exportMapAsImage() {
+      alert('Map export coming soon!');
     }
 
     function uuid() {
@@ -1141,12 +1658,17 @@
       const container = document.getElementById('refs-container');
       container.innerHTML = '';
 
+      const session = getCurrentSession();
       const attachedIds = new Set();
-      getCurrentSession().lines.forEach(line => {
+      session.lines.forEach(line => {
         (line.referenceIds || []).forEach(id => attachedIds.add(id));
       });
+      
+      // Also exclude refs that are on the map
+      const mapPointIds = new Set();
+      (session.mapPoints || []).forEach(p => mapPointIds.add(p.refId));
 
-      getCurrentSession().references.filter(ref => !attachedIds.has(ref.id)).forEach(ref => {
+      session.references.filter(ref => !attachedIds.has(ref.id) && !mapPointIds.has(ref.id)).forEach(ref => {
         const div = document.createElement('div');
         div.className = 'reference';
         div.dataset.refId = ref.id;
@@ -1295,14 +1817,19 @@
     // Actions
     function addLine() {
       pushUndo();
+      const session = getCurrentSession();
+      if (!session.type) {
+        session.type = 'outline';
+      }
       const newLine = {
         id: uuid(),
         text: '',
         referenceIds: []
       };
-      getCurrentSession().lines.push(newLine);
+      session.lines.push(newLine);
       saveData();
       renderLines();
+      updateViewForSession();
 
       // Focus the new line
       setTimeout(() => {
@@ -1365,33 +1892,42 @@
 
     function deleteReference(refId) {
       pushUndo();
+      const session = getCurrentSession();
       // Remove from references array
-      getCurrentSession().references = getCurrentSession().references.filter(r => r.id !== refId);
+      session.references = session.references.filter(r => r.id !== refId);
       // Remove from all lines' referenceIds
-      getCurrentSession().lines.forEach(line => {
+      session.lines.forEach(line => {
         if (line.referenceIds) {
           line.referenceIds = line.referenceIds.filter(id => id !== refId);
         }
       });
+      // Remove from map points
+      if (session.mapPoints) {
+        session.mapPoints = session.mapPoints.filter(p => p.refId !== refId);
+      }
       saveData();
       renderReferences();
       renderLines();
+      renderMapPoints();
       if (selectedLineId) {
         renderAttachedRefs();
       }
     }
 
     function clearAllReferences() {
-      if (!getCurrentSession().references.length) return;
+      const session = getCurrentSession();
+      if (!session.references.length) return;
       if (!confirm('Clear all references from the pile?')) return;
       pushUndo();
-      getCurrentSession().references = [];
-      getCurrentSession().lines.forEach(line => {
+      session.references = [];
+      session.lines.forEach(line => {
         if (line.referenceIds) line.referenceIds = [];
       });
+      if (session.mapPoints) session.mapPoints = [];
       saveData();
       renderReferences();
       renderLines();
+      renderMapPoints();
       if (selectedLineId) renderAttachedRefs();
     }
 
@@ -1573,8 +2109,9 @@
 
     // Paste multi-line content into left panel
     document.querySelector('.left-panel').addEventListener('paste', (e) => {
-      // Only handle if not focused on a text line
+      // Only handle if not focused on a text line and in outline mode
       if (document.activeElement.classList.contains('line-text')) return;
+      if (getCurrentSession().type === 'map') return;
 
       const text = e.clipboardData.getData('text');
       if (!text) return;
@@ -1582,6 +2119,10 @@
       e.preventDefault();
       e.stopPropagation();
       pushUndo();
+      
+      const session = getCurrentSession();
+      if (!session.type) session.type = 'outline';
+      
       const lines = text.split(/\r?\n/).filter(l => l.trim()).map(cleanLinePrefix);
 
       const newLines = lines.map(text => ({
@@ -1590,9 +2131,10 @@
         referenceIds: []
       }));
 
-      getCurrentSession().lines.push(...newLines);
+      session.lines.push(...newLines);
       saveData();
       renderLines();
+      updateViewForSession();
     });
 
     // Tabs
@@ -1721,6 +2263,7 @@
       renderTabs();
       renderLines();
       renderReferences();
+      updateViewForSession();
     }
 
     function addSession() {
@@ -1728,7 +2271,8 @@
       const newSession = {
         name: 'Session ' + (sessions.length + 1),
         lines: [],
-        references: []
+        references: [],
+        type: null
       };
       sessions.push(newSession);
       currentSessionIndex = sessions.length - 1;
@@ -1738,6 +2282,7 @@
       renderTabs();
       renderLines();
       renderReferences();
+      updateViewForSession();
     }
 
     // Refs container drop target (for dragging attached refs back to pile)
@@ -1843,6 +2388,51 @@
       return '<ul class="outline-refs">' + items + '</ul>';
     }
 
+    /** One inline fragment per ref (for table cell); multiple refs joined with a separator, same row. */
+    function formatReferenceInlineHtml(ref) {
+      if (!ref) return '';
+      const raw = ref.content == null ? '' : String(ref.content);
+      const label = escapeHtmlTextNode(raw);
+      const effectiveType = ref.type === 'text' ? detectRefType(raw.trim()) : ref.type;
+      if (effectiveType === 'url') {
+        if (isDisallowedExportHref(raw)) return label;
+        return '<a href="' + escapeHtmlAttr(raw) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+      }
+      if (effectiveType === 'image') {
+        if (isDisallowedExportHref(raw)) return label;
+        const esc = escapeHtmlAttr(raw);
+        return '<a href="' + esc + '" target="_blank" rel="noopener noreferrer"><img class="outline-table-inline-img" src="' + esc + '" alt=""></a>';
+      }
+      return label;
+    }
+
+    function renderReferencesTableCell(line, refMap) {
+      const parts = (line.referenceIds || []).map((id) => formatReferenceInlineHtml(refMap.get(id))).filter(Boolean);
+      return parts.join('<span class="outline-table-ref-sep"> · </span>');
+    }
+
+    function buildOutlineTableHtml(session, refMap) {
+      const lines = session.lines || [];
+      if (!lines.length) {
+        return '<p class="outline-empty">No outline lines to export.</p>';
+      }
+      const rows = lines.map((line) => {
+        const indent = line.indent || 0;
+        const outlineCell = line.text || '';
+        const refsCell = renderReferencesTableCell(line, refMap);
+        return (
+          '<tr><td class="outline-table-indent">' + String(indent) + '</td>' +
+          '<td class="outline-table-outline">' + outlineCell + '</td>' +
+          '<td class="outline-table-refs">' + refsCell + '</td></tr>'
+        );
+      }).join('');
+      return (
+        '<table class="outline-export-table">' +
+        '<thead><tr><th scope="col">Level</th><th scope="col">Outline</th><th scope="col">References</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody></table>'
+      );
+    }
+
     function outlineLineTextIsEmpty(html) {
       const d = document.createElement('div');
       d.innerHTML = html || '';
@@ -1887,14 +2477,8 @@
       }).join('');
     }
 
-    function exportOutlineHtml() {
-      const session = getCurrentSession();
-      const refMap = buildReferenceMap(session.references);
-      const tree = linesToOutlineTree(session.lines);
-      const inner = renderOutlineTreeToHtml(tree, 0, refMap);
-      const sessionName = session.name || 'Outline';
-      const titleText = 'Light Research — ' + sessionName;
-      const styles = [
+    function getOutlineExportStyles() {
+      return [
         '* { box-sizing: border-box; }',
         "body { font-family: Georgia, 'Times New Roman', serif; margin: 2rem auto; max-width: 42rem; padding: 0 1.25rem; color: #222; background: #fffef9; line-height: 1.45; }",
         'h1.export-title { font-size: 1.1rem; font-weight: normal; color: #666; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 1.5rem; border-bottom: 1px dotted #ccc; padding-bottom: 0.5rem; }',
@@ -1911,8 +2495,120 @@
         '.outline-ref a:hover { color: #222; }',
         '.outline-ref--image img { max-width: 100%; max-height: 140px; display: block; margin-top: 0.2rem; border-radius: 2px; }'
       ].join('\n');
+    }
 
+    function buildOutlineExportHtml(session) {
+      const refMap = buildReferenceMap(session.references);
+      const tree = linesToOutlineTree(session.lines);
+      const inner = renderOutlineTreeToHtml(tree, 0, refMap);
+      const sessionName = session.name || 'Outline';
+      const titleText = 'Light Research — ' + sessionName;
+      const styles = getOutlineExportStyles();
       const bodyInner = inner || '<p class="outline-empty">No outline lines to export.</p>';
+      return '<!DOCTYPE html>\n' +
+        '<html lang="en">\n<head>\n' +
+        '<meta charset="utf-8">\n' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+        '<title>' + escapeHtmlForTitle(titleText) + '</title>\n' +
+        '<style>\n' + styles + '\n</style>\n' +
+        '</head>\n<body>\n' +
+        '<h1 class="export-title">' + escapeHtmlForTitle(sessionName) + '</h1>\n' +
+        bodyInner + '\n' +
+        '</body>\n</html>';
+    }
+
+    function showPublishModal(url) {
+      const input = document.getElementById('publish-url-input');
+      input.value = url;
+      document.getElementById('publish-modal').classList.add('visible');
+      input.focus();
+      input.select();
+    }
+
+    function hidePublishModal() {
+      document.getElementById('publish-modal').classList.remove('visible');
+    }
+
+    async function copyPublishUrl() {
+      const input = document.getElementById('publish-url-input');
+      const url = input.value;
+      try {
+        await navigator.clipboard.writeText(url);
+        analyticsTrack('Publish Link Copied');
+      } catch (_) {
+        input.focus();
+        input.select();
+        document.execCommand('copy');
+      }
+    }
+
+    async function publishOutline() {
+      const btn = document.getElementById('publish-outline-btn');
+      const html = buildOutlineExportHtml(getCurrentSession());
+      const prevTitle = btn.title;
+      btn.disabled = true;
+      btn.title = 'Publishing...';
+      btn.style.color = '#ccc';
+
+      try {
+        analyticsTrack('Outline Publish Started');
+        const res = await fetch('/api/publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ html }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || 'Publish failed');
+        }
+        analyticsTrack('Outline Published');
+        showPublishModal(data.url);
+      } catch (err) {
+        alert('Could not publish: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.title = prevTitle;
+        btn.style.color = '';
+      }
+    }
+
+    function exportOutlineHtml() {
+      const html = buildOutlineExportHtml(getCurrentSession());
+
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'light-research-outline-' + new Date().toISOString().slice(0, 10) + '.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportOutlineHtmlTable() {
+      const session = getCurrentSession();
+      const refMap = buildReferenceMap(session.references);
+      const bodyInner = buildOutlineTableHtml(session, refMap);
+      const sessionName = session.name || 'Outline';
+      const titleText = 'Light Research — ' + sessionName + ' (table)';
+      const styles = [
+        '* { box-sizing: border-box; }',
+        "body { font-family: Georgia, 'Times New Roman', serif; margin: 2rem auto; max-width: 52rem; padding: 0 1.25rem; color: #222; background: #fffef9; line-height: 1.45; }",
+        'h1.export-title { font-size: 1.1rem; font-weight: normal; color: #666; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 1.5rem; border-bottom: 1px dotted #ccc; padding-bottom: 0.5rem; }',
+        '.outline-empty { color: #999; font-style: italic; }',
+        'table.outline-export-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.95rem; }',
+        'table.outline-export-table th, table.outline-export-table td { border: 1px solid #ddd; padding: 0.45rem 0.55rem; vertical-align: top; text-align: left; }',
+        'table.outline-export-table th { background: #f4f1ea; color: #555; font-weight: normal; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }',
+        'td.outline-table-indent { width: 3.25rem; color: #999; text-align: center; font-variant-numeric: tabular-nums; }',
+        'td.outline-table-outline { min-width: 12rem; word-break: break-word; }',
+        'td.outline-table-refs { word-break: break-word; font-size: 0.9rem; line-height: 1.5; }',
+        '.outline-table-ref-sep { color: #bbb; user-select: none; padding: 0 0.15rem; }',
+        '.outline-table-inline-img { max-height: 56px; max-width: 80px; vertical-align: middle; margin: 0 2px; border-radius: 2px; }',
+        'table.outline-export-table td a { color: #555; text-decoration: underline; text-underline-offset: 2px; }',
+        'table.outline-export-table td a:hover { color: #222; }'
+      ].join('\n');
+
       const html = '<!DOCTYPE html>\n' +
         '<html lang="en">\n<head>\n' +
         '<meta charset="utf-8">\n' +
@@ -1928,7 +2624,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'light-research-outline-' + new Date().toISOString().slice(0, 10) + '.html';
+      a.download = 'light-research-outline-table-' + new Date().toISOString().slice(0, 10) + '.html';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1953,6 +2649,7 @@
           renderTabs();
           renderLines();
           renderReferences();
+          updateViewForSession();
         } catch (err) {
           alert('Could not import: ' + err.message);
         }
@@ -1970,15 +2667,21 @@
       if (e.target === document.getElementById('help-modal')) closeHelpModal();
     });
 
+    document.getElementById('publish-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('publish-modal')) hidePublishModal();
+    });
+
     // Init
     async function init() {
       await initDB();
       const data = await loadData();
       sessions = data.sessions;
       currentSessionIndex = data.currentSessionIndex || 0;
+      initMapDragDrop();
       renderTabs();
       renderLines();
       renderReferences();
+      updateViewForSession();
       if (!localStorage.getItem('helpSeen')) {
         document.getElementById('help-modal').classList.add('visible');
       }
