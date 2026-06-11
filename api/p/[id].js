@@ -9,26 +9,28 @@ module.exports = async (req, res) => {
     return res.status(400).send('Invalid id');
   }
 
-  const pathname = `outlines/${id}.html`;
+  const pathnameCandidates = [`outlines/${id}.html`, `maps/${id}.html`];
 
   try {
-    const { blobs } = await list({ prefix: pathname, limit: 10 });
-    const blob = blobs.find((b) => b.pathname === pathname);
+    for (const pathname of pathnameCandidates) {
+      const { blobs } = await list({ prefix: pathname, limit: 10 });
+      const blob = blobs.find((b) => b.pathname === pathname);
 
-    if (!blob) {
-      return res.status(404).send('Not found');
+      if (!blob) continue;
+
+      const response = await fetch(blob.url);
+      if (!response.ok) {
+        return res.status(404).send('Not found');
+      }
+
+      const html = await response.text();
+
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
+      return res.status(200).send(html);
     }
 
-    const response = await fetch(blob.url);
-    if (!response.ok) {
-      return res.status(404).send('Not found');
-    }
-
-    const html = await response.text();
-
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
-    return res.status(200).send(html);
+    return res.status(404).send('Not found');
   } catch (err) {
     console.error('Blob fetch failed:', err);
     return res.status(500).send('Server error');

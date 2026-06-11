@@ -2,6 +2,7 @@ const { put } = require('@vercel/blob');
 const crypto = require('crypto');
 
 const MAX_HTML_BYTES = 5 * 1024 * 1024;
+const ID_PATTERN = /^[A-Za-z0-9_-]{8}$/;
 
 function parseBody(req) {
   const body = req.body;
@@ -31,6 +32,7 @@ module.exports = async (req, res) => {
 
   const parsed = parseBody(req);
   const html = parsed && parsed.html;
+  const type = parsed && parsed.type === 'map' ? 'map' : 'outline';
 
   if (!html || typeof html !== 'string') {
     return res.status(400).json({ error: 'Missing html' });
@@ -40,8 +42,13 @@ module.exports = async (req, res) => {
     return res.status(413).json({ error: 'HTML too large' });
   }
 
-  const id = crypto.randomBytes(6).toString('base64url');
-  const pathname = `outlines/${id}.html`;
+  // Use existing ID if provided and valid, otherwise generate new one
+  let id = parsed.id;
+  if (!id || typeof id !== 'string' || !ID_PATTERN.test(id)) {
+    id = crypto.randomBytes(6).toString('base64url');
+  }
+  const folder = type === 'map' ? 'maps' : 'outlines';
+  const pathname = `${folder}/${id}.html`;
 
   try {
     await put(pathname, html, {
@@ -58,5 +65,5 @@ module.exports = async (req, res) => {
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const url = `${proto}://${host}/p/${id}`;
 
-  return res.status(200).json({ id, url });
+  return res.status(200).json({ id, url, type });
 };
