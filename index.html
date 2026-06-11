@@ -699,17 +699,34 @@
       border-bottom-color: #ccc;
     }
 
-    .map-axis-input-x {
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
+    .map-axis-input-x-low {
+      left: 8px;
+      top: calc(50% + 6px);
       width: 100px;
+      text-align: left;
     }
 
-    .map-axis-input-y {
-      left: 8px;
-      top: 8px;
+    .map-axis-input-x-high {
+      right: 8px;
+      top: calc(50% + 6px);
       width: 100px;
+      text-align: right;
+    }
+
+    .map-axis-input-y-low {
+      left: calc(50% - 6px);
+      top: 8px;
+      transform: translateX(-100%);
+      width: 100px;
+      text-align: right;
+    }
+
+    .map-axis-input-y-high {
+      left: calc(50% - 6px);
+      bottom: 8px;
+      transform: translateX(-100%);
+      width: 100px;
+      text-align: right;
     }
 
     .map-container {
@@ -757,17 +774,21 @@
       transform: translate(-50%, -50%);
       cursor: grab;
       z-index: 1;
-      width: 140px;
+      width: 180px;
+      max-height: 120px;
       background: #fffef9;
       border: 1px solid #ddd;
       border-radius: 4px;
-      padding: 8px 10px;
+      padding: 7px 9px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
       transition: box-shadow 0.15s;
+      overflow: hidden;
     }
 
     .map-point:hover {
       box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+      max-height: none;
+      overflow: visible;
     }
 
     .map-point:active {
@@ -780,22 +801,24 @@
     }
 
     .map-point-title {
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 500;
       color: #333;
-      white-space: nowrap;
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.3;
+      word-break: break-word;
     }
 
     .map-point-subtitle {
-      font-size: 10px;
+      font-size: 9px;
       color: #888;
       margin-top: 2px;
-      line-height: 1.35;
+      line-height: 1.25;
       display: -webkit-box;
-      -webkit-line-clamp: 4;
+      -webkit-line-clamp: 6;
       -webkit-box-orient: vertical;
       overflow: hidden;
       word-break: break-word;
@@ -803,13 +826,9 @@
 
     .map-point:hover .map-point-title,
     .map-point:hover .map-point-subtitle {
-      white-space: normal;
-      word-break: break-word;
-    }
-
-    .map-point:hover .map-point-subtitle {
       display: block;
       -webkit-line-clamp: unset;
+      word-break: break-word;
     }
 
     .map-point-image {
@@ -990,8 +1009,10 @@
         <div class="map-container" id="map-container">
           <div class="map-axis-x"></div>
           <div class="map-axis-y"></div>
-          <input type="text" class="map-axis-input map-axis-input-x" id="map-x-label" placeholder="X axis..." oninput="saveMapAxisLabels()">
-          <input type="text" class="map-axis-input map-axis-input-y" id="map-y-label" placeholder="Y axis..." oninput="saveMapAxisLabels()">
+          <input type="text" class="map-axis-input map-axis-input-x-low" id="map-x-low-label" placeholder="Low X..." oninput="saveMapAxisLabels()">
+          <input type="text" class="map-axis-input map-axis-input-x-high" id="map-x-high-label" placeholder="High X..." oninput="saveMapAxisLabels()">
+          <input type="text" class="map-axis-input map-axis-input-y-low" id="map-y-low-label" placeholder="Low Y..." oninput="saveMapAxisLabels()">
+          <input type="text" class="map-axis-input map-axis-input-y-high" id="map-y-high-label" placeholder="High Y..." oninput="saveMapAxisLabels()">
           <div class="map-drop-hint">Drop references here to plot</div>
           <div id="map-points"></div>
         </div>
@@ -1253,8 +1274,10 @@
       session.type = type;
       if (type === 'map' && !session.mapPoints) {
         session.mapPoints = [];
-        session.mapAxisX = '';
-        session.mapAxisY = '';
+        session.mapAxisXLow = '';
+        session.mapAxisXHigh = '';
+        session.mapAxisYLow = '';
+        session.mapAxisYHigh = '';
       }
       saveData();
       updateViewForSession();
@@ -1286,14 +1309,18 @@
     // Map view functions
     function loadMapAxisLabels() {
       const session = getCurrentSession();
-      document.getElementById('map-x-label').value = session.mapAxisX || '';
-      document.getElementById('map-y-label').value = session.mapAxisY || '';
+      document.getElementById('map-x-low-label').value = session.mapAxisXLow || session.mapAxisX || '';
+      document.getElementById('map-x-high-label').value = session.mapAxisXHigh || '';
+      document.getElementById('map-y-low-label').value = session.mapAxisYLow || session.mapAxisY || '';
+      document.getElementById('map-y-high-label').value = session.mapAxisYHigh || '';
     }
 
     function saveMapAxisLabels() {
       const session = getCurrentSession();
-      session.mapAxisX = document.getElementById('map-x-label').value;
-      session.mapAxisY = document.getElementById('map-y-label').value;
+      session.mapAxisXLow = document.getElementById('map-x-low-label').value;
+      session.mapAxisXHigh = document.getElementById('map-x-high-label').value;
+      session.mapAxisYLow = document.getElementById('map-y-low-label').value;
+      session.mapAxisYHigh = document.getElementById('map-y-high-label').value;
       saveData();
     }
 
@@ -2603,12 +2630,14 @@
         '.map-axis-x { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #ccc; }',
         '.map-axis-y { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: #ccc; }',
         '.map-axis-label { position: absolute; font-size: 11px; color: #666; background: rgba(255,254,249,0.9); padding: 2px 6px; z-index: 2; }',
-        '.map-axis-label-x { bottom: 8px; left: 50%; transform: translateX(-50%); }',
-        '.map-axis-label-y { left: 8px; top: 8px; }',
-        '.map-point { position: absolute; transform: translate(-50%, -50%); width: 140px; background: #fffef9; border: 1px solid #ddd; border-radius: 4px; padding: 8px 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); z-index: 1; }',
+        '.map-axis-label-x-low { left: 8px; top: calc(50% + 6px); }',
+        '.map-axis-label-x-high { right: 8px; top: calc(50% + 6px); text-align: right; }',
+        '.map-axis-label-y-low { left: calc(50% - 6px); top: 8px; transform: translateX(-100%); text-align: right; }',
+        '.map-axis-label-y-high { left: calc(50% - 6px); bottom: 8px; transform: translateX(-100%); text-align: right; }',
+        '.map-point { position: absolute; transform: translate(-50%, -50%); width: 180px; background: #fffef9; border: 1px solid #ddd; border-radius: 4px; padding: 7px 9px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); z-index: 1; }',
         '.map-point.map-point--image { padding: 6px; }',
-        '.map-point-title { font-size: 12px; font-weight: 500; color: #333; line-height: 1.3; word-break: break-word; }',
-        '.map-point-subtitle { font-size: 10px; color: #888; margin-top: 2px; line-height: 1.35; word-break: break-word; }',
+        '.map-point-title { font-size: 10px; font-weight: 500; color: #333; line-height: 1.25; word-break: break-word; }',
+        '.map-point-subtitle { font-size: 9px; color: #888; margin-top: 2px; line-height: 1.25; word-break: break-word; }',
         '.map-point-title a { color: inherit; text-decoration: none; }',
         '.map-point-title a:hover { text-decoration: underline; }',
         '.map-point-image { display: block; max-width: 100%; max-height: 120px; width: auto; height: auto; margin: 0 auto; object-fit: contain; border-radius: 2px; }',
@@ -2648,8 +2677,15 @@
 
       const sessionName = session.name || 'Map';
       const titleText = 'Light Research — ' + sessionName;
-      const axisX = escapeHtmlTextNode(session.mapAxisX || 'X axis');
-      const axisY = escapeHtmlTextNode(session.mapAxisY || 'Y axis');
+      const axisXLow = session.mapAxisXLow || session.mapAxisX || '';
+      const axisXHigh = session.mapAxisXHigh || '';
+      const axisYLow = session.mapAxisYLow || session.mapAxisY || '';
+      const axisYHigh = session.mapAxisYHigh || '';
+
+      function mapAxisLabelHtml(className, text) {
+        if (!text) return '';
+        return '<span class="map-axis-label ' + className + '">' + escapeHtmlTextNode(text) + '</span>\n';
+      }
       const styles = getMapExportStyles();
       const mapInner = points.length
         ? pointsHtml
@@ -2666,8 +2702,10 @@
         '<div class="map-wrap"><div class="map-container">\n' +
         '<div class="map-axis-x"></div>\n' +
         '<div class="map-axis-y"></div>\n' +
-        '<span class="map-axis-label map-axis-label-x">' + axisX + '</span>\n' +
-        '<span class="map-axis-label map-axis-label-y">' + axisY + '</span>\n' +
+        mapAxisLabelHtml('map-axis-label-x-low', axisXLow) +
+        mapAxisLabelHtml('map-axis-label-x-high', axisXHigh) +
+        mapAxisLabelHtml('map-axis-label-y-low', axisYLow) +
+        mapAxisLabelHtml('map-axis-label-y-high', axisYHigh) +
         mapInner + '\n' +
         '</div></div>\n' +
         '</body>\n</html>';
