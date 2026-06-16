@@ -25,6 +25,10 @@
       padding: 0;
     }
 
+    :root {
+      --label-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    }
+
     body {
       font-family: Georgia, 'Times New Roman', serif;
       height: 100vh;
@@ -46,7 +50,16 @@
 
     .left-panel {
       flex: 1;
+      min-height: 0;
       border-right: 0.5px dashed #ccc;
+    }
+
+    .left-panel:has(.map-view.active) {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding-top: 0;
+      padding-bottom: 44px;
     }
 
     .middle-panel {
@@ -90,6 +103,7 @@
     .panel-title {
       display: flex;
       flex-direction: row;
+      font-family: var(--label-font);
       font-size: 11px;
       font-weight: normal;
       text-transform: uppercase;
@@ -667,12 +681,17 @@
     .map-view {
       display: none;
       flex-direction: column;
-      height: calc(100% - 40px);
-      padding: 0 20px 20px;
+      flex: 1;
+      min-height: 0;
     }
 
     .map-view.active {
       display: flex;
+    }
+
+    .map-view .panel-title {
+      padding-top: 24px;
+      flex-shrink: 0;
     }
 
     .map-axis-input {
@@ -700,14 +719,14 @@
     }
 
     .map-axis-input-x-low {
-      left: 8px;
+      left: 20px;
       top: calc(50% + 6px);
       width: 100px;
       text-align: left;
     }
 
     .map-axis-input-x-high {
-      right: 8px;
+      right: 20px;
       top: calc(50% + 6px);
       width: 100px;
       text-align: right;
@@ -715,7 +734,7 @@
 
     .map-axis-input-y-low {
       left: calc(50% - 6px);
-      top: 8px;
+      top: 12px;
       transform: translateX(-100%);
       width: 100px;
       text-align: right;
@@ -723,7 +742,7 @@
 
     .map-axis-input-y-high {
       left: calc(50% - 6px);
-      bottom: 8px;
+      bottom: 12px;
       transform: translateX(-100%);
       width: 100px;
       text-align: right;
@@ -731,19 +750,14 @@
 
     .map-container {
       flex: 1;
+      min-height: 0;
       position: relative;
-      border: 1px solid #ddd;
-      background: 
-        linear-gradient(to right, #e8e8e8 1px, transparent 1px),
-        linear-gradient(to bottom, #e8e8e8 1px, transparent 1px);
-      background-size: 40px 40px;
-      background-color: #fafaf5;
+      background-color: transparent;
       overflow: hidden;
     }
 
     .map-container.dragover {
-      background-color: #f5f5f0;
-      border-color: #888;
+      background-color: rgba(0, 0, 0, 0.02);
     }
 
     /* Map axes */
@@ -780,13 +794,10 @@
       border: 1px solid #ddd;
       border-radius: 4px;
       padding: 7px 9px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      transition: box-shadow 0.15s;
       overflow: hidden;
     }
 
     .map-point:hover {
-      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
       max-height: none;
       overflow: visible;
     }
@@ -797,7 +808,6 @@
 
     .map-point.dragging {
       opacity: 0.9;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
     .map-point-title {
@@ -810,6 +820,20 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
       word-break: break-word;
+    }
+
+    .map-point-title a,
+    .map-point-subtitle a {
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .map-point:has(.map-point-title:hover) .map-point-title a,
+    .map-point:has(.map-point-title:hover) .map-point-subtitle a,
+    .map-point:has(.map-point-subtitle:hover) .map-point-title a,
+    .map-point:has(.map-point-subtitle:hover) .map-point-subtitle a {
+      text-decoration: underline;
     }
 
     .map-point-subtitle {
@@ -834,7 +858,6 @@
     .map-point-image {
       display: block;
       max-width: 100%;
-      max-height: 80px;
       width: auto;
       height: auto;
       margin: 0 auto;
@@ -842,33 +865,97 @@
       border-radius: 2px;
     }
 
-    .map-point:hover .map-point-image {
-      max-height: 160px;
-    }
-
     .map-point.map-point--image {
       padding: 6px;
+      width: auto;
+      min-width: 60px;
+      max-width: 200px;
+      max-height: none;
+      overflow: visible;
+      cursor: zoom-in;
+    }
+
+    .map-point.map-point--image.dragging {
+      cursor: grabbing;
+    }
+
+    /* Image lightbox overlay */
+    .map-image-lightbox {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .map-image-lightbox.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .map-image-lightbox-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 254, 249, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .map-image-lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      z-index: 1;
+    }
+
+    .map-image-lightbox-content img {
+      display: block;
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     }
 
     .map-point-delete {
       position: absolute;
-      top: -6px;
-      right: -6px;
-      width: 16px;
-      height: 16px;
+      top: 0;
+      right: 0;
+      width: 18px;
+      height: 18px;
       border: none;
-      background: #c00;
-      color: #fff;
+      border-left: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      border-radius: 0 3px 0 0;
+      background: #fffef9;
+      color: #ccc;
       font-size: 12px;
-      line-height: 14px;
-      border-radius: 50%;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
       opacity: 0;
-      transition: opacity 0.15s;
+      transition: opacity 0.15s, color 0.15s;
     }
 
     .map-point:hover .map-point-delete {
       opacity: 1;
+    }
+
+    .map-point-delete:hover {
+      color: #666;
     }
 
     .map-drop-hint {
@@ -893,6 +980,52 @@
 
     .outline-view.hidden {
       display: none;
+    }
+
+    .publish-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--label-font);
+      font-size: 11px;
+      color: #aaa;
+      padding: 0;
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Icon button tooltips */
+    .icon-btn {
+      position: relative;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 11px;
+      color: #aaa;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .icon-btn::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 4px;
+      padding: 3px 6px;
+      font-size: 9px;
+      font-style: italic;
+      color: #999;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+
+    .icon-btn:hover::after {
+      opacity: 1;
     }
 
     @media (max-width: 768px) {
@@ -948,6 +1081,7 @@
         border: 0.5px dashed #ccc;
         border-right: none;
         cursor: pointer;
+        font-family: var(--label-font);
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -987,10 +1121,10 @@
       <div class="outline-view" id="outline-view">
         <div class="panel-title">
           <span>Outline</span>
-          <span style="display:flex; gap:8px; margin-left:auto; align-items:center;">
-            <button type="button" onclick="exportOutlineHtml()" title="Export outline as HTML" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;font-family:ui-monospace,monospace;">&lt;/&gt;</button>
-            <button type="button" onclick="exportOutlineHtmlTable()" title="Export outline as HTML table" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;">▦</button>
-            <button type="button" id="publish-outline-btn" onclick="publishOutline()" title="Publish outline as link" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;font-family:inherit;">↗</button>
+          <span style="display:flex; gap:12px; margin-left:auto; align-items:center;">
+            <button type="button" class="icon-btn" onclick="exportOutlineHtml()" data-tooltip="HTML" style="font-family:ui-monospace,monospace;">&lt;/&gt;</button>
+            <button type="button" class="icon-btn" onclick="exportOutlineHtmlTable()" data-tooltip="table">▦</button>
+            <button type="button" class="publish-btn" id="publish-outline-btn" onclick="publishOutline()">publish ↗</button>
           </span>
         </div>
         <div id="lines-container"></div>
@@ -1001,9 +1135,8 @@
       <div class="map-view" id="map-view">
         <div class="panel-title">
           <span>Map</span>
-          <span style="display:flex; gap:8px; margin-left:auto; align-items:center;">
-            <button type="button" id="publish-map-btn" onclick="publishMap()" title="Publish map as link" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;font-family:inherit;">↗</button>
-            <button type="button" onclick="exportMapAsImage()" title="Export map as image" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;line-height:1;">⤓</button>
+          <span style="display:flex; gap:12px; margin-left:auto; align-items:center;">
+            <button type="button" class="publish-btn" id="publish-map-btn" onclick="publishMap()">publish ↗</button>
           </span>
         </div>
         <div class="map-container" id="map-container">
@@ -1019,6 +1152,14 @@
       </div>
     </div>
 
+    <!-- Image lightbox for map images -->
+    <div class="map-image-lightbox" id="map-image-lightbox">
+      <div class="map-image-lightbox-backdrop" onclick="closeImageLightbox()"></div>
+      <div class="map-image-lightbox-content">
+        <img id="map-image-lightbox-img" src="" alt="Image preview">
+      </div>
+    </div>
+
     <div class="panel middle-panel" id="middle-panel">
       <div class="panel-title" id="middle-panel-title">Attached References</div>
       <div id="attached-refs"></div>
@@ -1027,12 +1168,12 @@
     <div class="panel right-panel">
       <div class="panel-title">
         <span>Unsorted</span>
-        <span style="display:flex; gap:8px; margin-left:auto; align-items:center;">
-          <button onclick="exportData()" title="Export backup" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">↓</button>
-          <button onclick="document.getElementById('import-input').click()" title="Import backup" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">↑</button>
-          <button onclick="showArenaModal()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;display:flex;align-items:center;">✶✶</button>
-          <button onclick="clearAllReferences()" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">Ø</button>
-          <button onclick="document.getElementById('help-modal').classList.add('visible')" style="background:none;border:none;cursor:pointer;font-size:11px;color:#aaa;padding:0;font-family:inherit;line-height:1;">?</button>
+        <span style="display:flex; gap:12px; margin-left:auto; align-items:center;">
+          <button class="icon-btn" onclick="exportData()" data-tooltip="export">↓</button>
+          <button class="icon-btn" onclick="document.getElementById('import-input').click()" data-tooltip="import">↑</button>
+          <button class="icon-btn" onclick="showArenaModal()" data-tooltip="Are.na" style="display:flex;align-items:center;">✶✶</button>
+          <button class="icon-btn" onclick="clearAllReferences()" data-tooltip="clear">Ø</button>
+          <button class="icon-btn" onclick="document.getElementById('help-modal').classList.add('visible')" data-tooltip="help">?</button>
         </span>
         <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
       </div>
@@ -1076,7 +1217,7 @@
               <td style="padding:5px 0;">export outline as HTML table</td>
             </tr>
             <tr>
-              <td style="padding:5px 0;color:#999;width:48px;">↗</td>
+              <td style="padding:5px 0;color:#999;width:48px;">publish ↗</td>
               <td style="padding:5px 0;">publish outline as link</td>
             </tr>
             <tr>
@@ -1405,13 +1546,31 @@
           
           const titleEl = document.createElement('div');
           titleEl.className = 'map-point-title';
-          titleEl.textContent = title;
+          if (ref && ref.type === 'url') {
+            const linkEl = document.createElement('a');
+            linkEl.href = ref.content;
+            linkEl.target = '_blank';
+            linkEl.rel = 'noopener noreferrer';
+            linkEl.textContent = title;
+            titleEl.appendChild(linkEl);
+          } else {
+            titleEl.textContent = title;
+          }
           pointEl.appendChild(titleEl);
 
           if (subtitle) {
             const subtitleEl = document.createElement('div');
             subtitleEl.className = 'map-point-subtitle';
-            subtitleEl.textContent = subtitle;
+            if (ref && ref.type === 'url') {
+              const linkEl = document.createElement('a');
+              linkEl.href = ref.content;
+              linkEl.target = '_blank';
+              linkEl.rel = 'noopener noreferrer';
+              linkEl.textContent = subtitle;
+              subtitleEl.appendChild(linkEl);
+            } else {
+              subtitleEl.textContent = subtitle;
+            }
             pointEl.appendChild(subtitleEl);
           }
         }
@@ -1425,29 +1584,62 @@
         };
         pointEl.appendChild(deleteBtn);
 
-        // Make draggable within map
+        // Make draggable within map (title links open in a new tab instead)
+        // For images: click opens lightbox, drag moves the point
+        const isImagePoint = ref && ref.type === 'image';
+        const DRAG_THRESHOLD = 5; // pixels before considering it a drag
+
         pointEl.onmousedown = (e) => {
           if (e.target === deleteBtn) return;
+          if (e.target.closest('a')) return;
           e.preventDefault();
-          pointEl.classList.add('dragging');
-          const rect = container.getBoundingClientRect();
+
+          const startMouseX = e.clientX;
+          const startMouseY = e.clientY;
+          let isDragging = false;
+
+          const startRect = container.getBoundingClientRect();
+          const startClickX = ((e.clientX - startRect.left) / startRect.width) * 100;
+          const startClickY = ((e.clientY - startRect.top) / startRect.height) * 100;
+          const offsetX = startClickX - point.x;
+          const offsetY = startClickY - point.y;
           
           const onMove = (moveE) => {
-            const newX = ((moveE.clientX - rect.left) / rect.width) * 100;
-            const newY = ((moveE.clientY - rect.top) / rect.height) * 100;
-            pointEl.style.left = Math.max(0, Math.min(100, newX)) + '%';
-            pointEl.style.top = Math.max(0, Math.min(100, newY)) + '%';
+            const dx = moveE.clientX - startMouseX;
+            const dy = moveE.clientY - startMouseY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (!isDragging && distance > DRAG_THRESHOLD) {
+              isDragging = true;
+              pointEl.classList.add('dragging');
+            }
+            
+            if (isDragging) {
+              const rect = container.getBoundingClientRect();
+              const cursorX = ((moveE.clientX - rect.left) / rect.width) * 100;
+              const cursorY = ((moveE.clientY - rect.top) / rect.height) * 100;
+              const newX = cursorX - offsetX;
+              const newY = cursorY - offsetY;
+              pointEl.style.left = Math.max(0, Math.min(100, newX)) + '%';
+              pointEl.style.top = Math.max(0, Math.min(100, newY)) + '%';
+            }
           };
 
           const onUp = (upE) => {
             document.removeEventListener('mousemove', onMove);
             document.removeEventListener('mouseup', onUp);
             pointEl.classList.remove('dragging');
-            const finalX = ((upE.clientX - rect.left) / rect.width) * 100;
-            const finalY = ((upE.clientY - rect.top) / rect.height) * 100;
-            point.x = Math.max(0, Math.min(100, finalX));
-            point.y = Math.max(0, Math.min(100, finalY));
-            saveData();
+            
+            if (isDragging) {
+              const rect = container.getBoundingClientRect();
+              const finalX = ((upE.clientX - rect.left) / rect.width) * 100 - offsetX;
+              const finalY = ((upE.clientY - rect.top) / rect.height) * 100 - offsetY;
+              point.x = Math.max(0, Math.min(100, finalX));
+              point.y = Math.max(0, Math.min(100, finalY));
+              saveData();
+            } else if (isImagePoint) {
+              openImageLightbox(ref.content);
+            }
           };
 
           document.addEventListener('mousemove', onMove);
@@ -1542,8 +1734,25 @@
       };
     }
 
-    function exportMapAsImage() {
-      alert('Map export coming soon!');
+
+    function openImageLightbox(src) {
+      const lightbox = document.getElementById('map-image-lightbox');
+      const img = document.getElementById('map-image-lightbox-img');
+      img.src = src;
+      lightbox.classList.add('active');
+      document.addEventListener('keydown', handleLightboxEscape);
+    }
+
+    function closeImageLightbox() {
+      const lightbox = document.getElementById('map-image-lightbox');
+      lightbox.classList.remove('active');
+      document.removeEventListener('keydown', handleLightboxEscape);
+    }
+
+    function handleLightboxEscape(e) {
+      if (e.key === 'Escape') {
+        closeImageLightbox();
+      }
     }
 
     function uuid() {
@@ -2626,21 +2835,26 @@
         "body { font-family: Georgia, 'Times New Roman', serif; margin: 0; padding: 1.5rem; color: #222; background: #fffef9; min-height: 100vh; display: flex; flex-direction: column; }",
         'h1.export-title { font-size: 1.1rem; font-weight: normal; color: #666; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 1rem; border-bottom: 1px dotted #ccc; padding-bottom: 0.5rem; flex-shrink: 0; }',
         '.map-wrap { flex: 1; min-height: 420px; display: flex; }',
-        '.map-container { flex: 1; position: relative; border: 1px solid #ddd; background: linear-gradient(to right, #e8e8e8 1px, transparent 1px), linear-gradient(to bottom, #e8e8e8 1px, transparent 1px); background-size: 40px 40px; background-color: #fafaf5; min-height: 400px; }',
+        '.map-container { flex: 1; position: relative; background-color: transparent; min-height: 400px; }',
         '.map-axis-x { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #ccc; }',
         '.map-axis-y { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: #ccc; }',
         '.map-axis-label { position: absolute; font-size: 11px; color: #666; background: rgba(255,254,249,0.9); padding: 2px 6px; z-index: 2; }',
-        '.map-axis-label-x-low { left: 8px; top: calc(50% + 6px); }',
-        '.map-axis-label-x-high { right: 8px; top: calc(50% + 6px); text-align: right; }',
-        '.map-axis-label-y-low { left: calc(50% - 6px); top: 8px; transform: translateX(-100%); text-align: right; }',
-        '.map-axis-label-y-high { left: calc(50% - 6px); bottom: 8px; transform: translateX(-100%); text-align: right; }',
-        '.map-point { position: absolute; transform: translate(-50%, -50%); width: 180px; background: #fffef9; border: 1px solid #ddd; border-radius: 4px; padding: 7px 9px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); z-index: 1; }',
-        '.map-point.map-point--image { padding: 6px; }',
+        '.map-axis-label-x-low { left: 20px; top: calc(50% + 6px); }',
+        '.map-axis-label-x-high { right: 20px; top: calc(50% + 6px); text-align: right; }',
+        '.map-axis-label-y-low { left: calc(50% - 6px); top: 12px; transform: translateX(-100%); text-align: right; }',
+        '.map-axis-label-y-high { left: calc(50% - 6px); bottom: 12px; transform: translateX(-100%); text-align: right; }',
+        '.map-point { position: absolute; transform: translate(-50%, -50%); width: 180px; background: #fffef9; border: 1px solid #ddd; border-radius: 4px; padding: 7px 9px; z-index: 1; }',
+        '.map-point.map-point--image { padding: 6px; width: auto; min-width: 60px; max-width: 200px; max-height: none; overflow: visible; cursor: zoom-in; }',
         '.map-point-title { font-size: 10px; font-weight: 500; color: #333; line-height: 1.25; word-break: break-word; }',
         '.map-point-subtitle { font-size: 9px; color: #888; margin-top: 2px; line-height: 1.25; word-break: break-word; }',
-        '.map-point-title a { color: inherit; text-decoration: none; }',
-        '.map-point-title a:hover { text-decoration: underline; }',
-        '.map-point-image { display: block; max-width: 100%; max-height: 120px; width: auto; height: auto; margin: 0 auto; object-fit: contain; border-radius: 2px; }',
+        '.map-point-title a, .map-point-subtitle a { color: inherit; text-decoration: none; }',
+        '.map-point:has(.map-point-title:hover) .map-point-title a, .map-point:has(.map-point-title:hover) .map-point-subtitle a, .map-point:has(.map-point-subtitle:hover) .map-point-title a, .map-point:has(.map-point-subtitle:hover) .map-point-subtitle a { text-decoration: underline; }',
+        '.map-point-image { display: block; max-width: 100%; width: auto; height: auto; margin: 0 auto; object-fit: contain; border-radius: 2px; }',
+        '.map-image-lightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease; }',
+        '.map-image-lightbox.active { opacity: 1; visibility: visible; }',
+        '.map-image-lightbox-backdrop { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 254, 249, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }',
+        '.map-image-lightbox-content { position: relative; max-width: 90vw; max-height: 90vh; z-index: 1; }',
+        '.map-image-lightbox-content img { display: block; max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 4px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); }',
         '.map-empty { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #bbb; font-style: italic; font-size: 14px; }'
       ].join('\n');
     }
@@ -2651,7 +2865,7 @@
         if (isDisallowedExportHref(ref.content)) {
           return '<div class="map-point" style="' + style + '"><div class="map-point-title">Image</div></div>';
         }
-        return '<div class="map-point map-point--image" style="' + style + '"><img class="map-point-image" src="' + escapeHtmlAttr(ref.content) + '" alt=""></div>';
+        return '<div class="map-point map-point--image" style="' + style + '" data-image-src="' + escapeHtmlAttr(ref.content) + '"><img class="map-point-image" src="' + escapeHtmlAttr(ref.content) + '" alt=""></div>';
       }
 
       const { title, subtitle } = getRefTitleAndSubtitle(ref);
@@ -2662,7 +2876,11 @@
         inner += '<div class="map-point-title">' + escapeHtmlTextNode(title) + '</div>';
       }
       if (subtitle) {
-        inner += '<div class="map-point-subtitle">' + escapeHtmlTextNode(subtitle) + '</div>';
+        if (ref && ref.type === 'url' && !isDisallowedExportHref(ref.content)) {
+          inner += '<div class="map-point-subtitle"><a href="' + escapeHtmlAttr(ref.content) + '" target="_blank" rel="noopener noreferrer">' + escapeHtmlTextNode(subtitle) + '</a></div>';
+        } else {
+          inner += '<div class="map-point-subtitle">' + escapeHtmlTextNode(subtitle) + '</div>';
+        }
       }
       return '<div class="map-point" style="' + style + '">' + inner + '</div>';
     }
@@ -2690,6 +2908,26 @@
       const mapInner = points.length
         ? pointsHtml
         : '<div class="map-empty">No points on this map yet.</div>';
+      const lightboxMarkup =
+        '<div class="map-image-lightbox" id="map-image-lightbox">' +
+        '<div class="map-image-lightbox-backdrop" id="map-image-lightbox-backdrop"></div>' +
+        '<div class="map-image-lightbox-content">' +
+        '<img id="map-image-lightbox-img" src="" alt="Image preview">' +
+        '</div></div>';
+      const lightboxScript =
+        '<script>(function(){' +
+        'var lightbox=document.getElementById("map-image-lightbox");' +
+        'var lightboxImg=document.getElementById("map-image-lightbox-img");' +
+        'var backdrop=document.getElementById("map-image-lightbox-backdrop");' +
+        'if(!lightbox||!lightboxImg)return;' +
+        'function openLightbox(src){lightboxImg.src=src;lightbox.classList.add("active");}' +
+        'function closeLightbox(){lightbox.classList.remove("active");}' +
+        'document.querySelectorAll(".map-point--image[data-image-src]").forEach(function(point){' +
+        'point.addEventListener("click",function(){openLightbox(point.getAttribute("data-image-src"));});' +
+        '});' +
+        'if(backdrop)backdrop.addEventListener("click",closeLightbox);' +
+        'document.addEventListener("keydown",function(e){if(e.key==="Escape")closeLightbox();});' +
+        '})();<\/script>';
 
       return '<!DOCTYPE html>\n' +
         '<html lang="en">\n<head>\n' +
@@ -2708,6 +2946,8 @@
         mapAxisLabelHtml('map-axis-label-y-high', axisYHigh) +
         mapInner + '\n' +
         '</div></div>\n' +
+        lightboxMarkup + '\n' +
+        lightboxScript + '\n' +
         '</body>\n</html>';
     }
 
