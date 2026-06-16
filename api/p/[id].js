@@ -1,4 +1,5 @@
 const { list } = require('@vercel/blob');
+const { patchPublishedHtml } = require('../published-share-ui');
 
 const ID_PATTERN = /^[a-zA-Z0-9_-]{6,16}$/;
 
@@ -23,7 +24,7 @@ module.exports = async (req, res) => {
         return res.status(404).send('Not found');
       }
 
-      const html = await response.text();
+      const html = patchPublishedHtml(await response.text());
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');

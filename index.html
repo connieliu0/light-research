@@ -748,12 +748,18 @@
       text-align: right;
     }
 
-    .map-container {
+    .map-scroll-area {
       flex: 1;
       min-height: 0;
-      position: relative;
-      background-color: transparent;
       overflow: hidden;
+    }
+
+    .map-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      background-color: transparent;
     }
 
     .map-container.dragover {
@@ -1112,6 +1118,19 @@
       .mobile-refs-tab.refs-open {
         right: 50%;
       }
+
+      .map-scroll-area {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+
+      .map-container {
+        min-width: 640px;
+        min-height: 520px;
+        width: max(100%, 640px);
+        height: max(100%, 520px);
+      }
     }
   </style>
 </head>
@@ -1165,15 +1184,17 @@
             </span>
           </span>
         </div>
-        <div class="map-container" id="map-container">
-          <div class="map-axis-x"></div>
-          <div class="map-axis-y"></div>
-          <input type="text" class="map-axis-input map-axis-input-x-low" id="map-x-low-label" placeholder="Low X..." oninput="saveMapAxisLabels()">
-          <input type="text" class="map-axis-input map-axis-input-x-high" id="map-x-high-label" placeholder="High X..." oninput="saveMapAxisLabels()">
-          <input type="text" class="map-axis-input map-axis-input-y-low" id="map-y-low-label" placeholder="Low Y..." oninput="saveMapAxisLabels()">
-          <input type="text" class="map-axis-input map-axis-input-y-high" id="map-y-high-label" placeholder="High Y..." oninput="saveMapAxisLabels()">
-          <div class="map-drop-hint">Drop references here to plot</div>
-          <div id="map-points"></div>
+        <div class="map-scroll-area">
+          <div class="map-container" id="map-container">
+            <div class="map-axis-x"></div>
+            <div class="map-axis-y"></div>
+            <input type="text" class="map-axis-input map-axis-input-x-low" id="map-x-low-label" placeholder="Low X..." oninput="saveMapAxisLabels()">
+            <input type="text" class="map-axis-input map-axis-input-x-high" id="map-x-high-label" placeholder="High X..." oninput="saveMapAxisLabels()">
+            <input type="text" class="map-axis-input map-axis-input-y-low" id="map-y-low-label" placeholder="Low Y..." oninput="saveMapAxisLabels()">
+            <input type="text" class="map-axis-input map-axis-input-y-high" id="map-y-high-label" placeholder="High Y..." oninput="saveMapAxisLabels()">
+            <div class="map-drop-hint">Drop references here to plot</div>
+            <div id="map-points"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -3048,12 +3069,23 @@
         '.lr-qr-close { position: absolute; top: 0.5rem; right: 0.65rem; background: none; border: none; font-size: 1.25rem; line-height: 1; color: #bbb; cursor: pointer; padding: 0; }',
         '.lr-qr-close:hover { color: #666; }',
         '.lr-qr-title { margin: 0 0 1rem; font-size: 0.78rem; font-weight: normal; color: #666; letter-spacing: 0.06em; text-transform: uppercase; }',
-        '.lr-qr-img { display: block; margin: 0 auto; border: none; border-radius: 0; background: #fff; }',
+        '.lr-qr-overlay .lr-qr-img { display: block; margin: 0 auto; border: none; border-radius: 0; background: #fff; }',
         '.lr-qr-url { margin: 0.85rem 0 0; font-size: 0.72rem; color: #999; word-break: break-all; line-height: 1.35; }'
       ].join('\n');
 
       const qrButton = '<button type="button" class="lr-qr-btn" id="lr-qr-btn" aria-label="Show QR code">QR code</button>';
-      const withHeader = html.replace(
+
+      let normalized = html;
+      normalized = normalized.replace(/<style>\s*\.export-header[\s\S]*?\.lr-qr-url\s*\{[^}]+\}\s*<\/style>\s*/g, '');
+      normalized = normalized.replace(/<div class="lr-qr-overlay"[\s\S]*?<\/div>\s*<\/div>\s*/g, '');
+      normalized = normalized.replace(/<script>\(function\(\)\{var btn=document\.getElementById\("lr-qr-btn"\)[\s\S]*?<\/script>\s*/g, '');
+      normalized = normalized.replace(/<script>\(function\(\)\{var img=document\.getElementById\("lr-qr-img"\)[\s\S]*?<\/script>\s*/g, '');
+      normalized = normalized.replace(
+        /<div class="export-header">\s*(<h1 class="export-title">[\s\S]*?<\/h1>)\s*(?:<img\b[^>]*\bclass="lr-qr-img"[^>]*>|<button[^>]*\blr-qr-btn\b[^>]*>[\s\S]*?<\/button>)?\s*<\/div>/gi,
+        '$1'
+      );
+
+      const withHeader = normalized.replace(
         /(<h1 class="export-title">[\s\S]*?<\/h1>)/,
         '<div class="export-header">$1' + qrButton + '</div>'
       );
