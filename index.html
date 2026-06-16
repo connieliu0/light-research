@@ -995,6 +995,24 @@
       letter-spacing: 1px;
     }
 
+    .publish-btn:disabled {
+      cursor: default;
+      color: #ddd;
+    }
+
+    .publish-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .publish-sep {
+      color: #ccc;
+      font-size: 11px;
+      line-height: 1;
+      user-select: none;
+    }
+
     /* Icon button tooltips */
     .icon-btn {
       position: relative;
@@ -1124,7 +1142,11 @@
           <span style="display:flex; gap:12px; margin-left:auto; align-items:center;">
             <button type="button" class="icon-btn" onclick="exportOutlineHtml()" data-tooltip="HTML" style="font-family:ui-monospace,monospace;">&lt;/&gt;</button>
             <button type="button" class="icon-btn" onclick="exportOutlineHtmlTable()" data-tooltip="table">▦</button>
-            <button type="button" class="publish-btn" id="publish-outline-btn" onclick="publishOutline()">publish ↗</button>
+            <span class="publish-actions">
+              <button type="button" class="publish-btn" id="publish-outline-btn" onclick="publishOutline()">publish ↗</button>
+              <span class="publish-sep" aria-hidden="true">·</span>
+              <button type="button" class="publish-btn" id="copy-outline-link-btn" onclick="copyPublishedLink('outline')">copy link</button>
+            </span>
           </span>
         </div>
         <div id="lines-container"></div>
@@ -1136,7 +1158,11 @@
         <div class="panel-title">
           <span>Map</span>
           <span style="display:flex; gap:12px; margin-left:auto; align-items:center;">
-            <button type="button" class="publish-btn" id="publish-map-btn" onclick="publishMap()">publish ↗</button>
+            <span class="publish-actions">
+              <button type="button" class="publish-btn" id="publish-map-btn" onclick="publishMap()">publish ↗</button>
+              <span class="publish-sep" aria-hidden="true">·</span>
+              <button type="button" class="publish-btn" id="copy-map-link-btn" onclick="copyPublishedLink('map')">copy link</button>
+            </span>
           </span>
         </div>
         <div class="map-container" id="map-container">
@@ -1444,6 +1470,45 @@
         chooser.style.display = 'none';
         outlineView.classList.remove('hidden');
         mapView.classList.remove('active');
+      }
+      updatePublishCopyButtons();
+    }
+
+    function getPublishedUrl(type) {
+      const session = getCurrentSession();
+      if (!session.publishedId || session.publishedType !== type) return null;
+      return location.origin + '/p/' + session.publishedId;
+    }
+
+    function updatePublishCopyButtons() {
+      const session = getCurrentSession();
+      const outlineBtn = document.getElementById('copy-outline-link-btn');
+      const mapBtn = document.getElementById('copy-map-link-btn');
+      if (outlineBtn) {
+        const hasOutlineLink = session.publishedId && session.publishedType === 'outline';
+        outlineBtn.disabled = !hasOutlineLink;
+        outlineBtn.style.color = hasOutlineLink ? '' : '#ddd';
+      }
+      if (mapBtn) {
+        const hasMapLink = session.publishedId && session.publishedType === 'map';
+        mapBtn.disabled = !hasMapLink;
+        mapBtn.style.color = hasMapLink ? '' : '#ddd';
+      }
+    }
+
+    async function copyPublishedLink(type) {
+      const url = getPublishedUrl(type);
+      if (!url) return;
+      const btnId = type === 'map' ? 'copy-map-link-btn' : 'copy-outline-link-btn';
+      const btn = document.getElementById(btnId);
+      const prevText = btn.textContent;
+      try {
+        await navigator.clipboard.writeText(url);
+        analyticsTrack((type === 'map' ? 'Map' : 'Outline') + ' Publish Link Copied');
+        btn.textContent = 'copied';
+        setTimeout(() => { btn.textContent = prevText; }, 1200);
+      } catch (_) {
+        window.prompt('Copy this link:', url);
       }
     }
 
@@ -2973,53 +3038,25 @@
 
     function appendPublishedShareUi(html) {
       const shareStyles = [
-        '.export-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 0 1.5rem; border-bottom: 1px dotted #ccc; padding-bottom: 0.5rem; flex-shrink: 0; }',
-        '.export-header .export-title { margin: 0; border-bottom: none; padding-bottom: 0; flex: 1; min-width: 0; }',
-        '.lr-qr-btn { flex-shrink: 0; font-family: Georgia, "Times New Roman", serif; font-size: 11px; letter-spacing: 0.04em; color: #666; background: transparent; border: 1px solid #ddd; border-radius: 999px; padding: 0.3rem 0.65rem; cursor: pointer; white-space: nowrap; }',
-        '.lr-qr-btn:hover { color: #333; border-color: #ccc; }',
-        '.lr-qr-overlay { position: fixed; inset: 0; z-index: 9100; display: flex; align-items: center; justify-content: center; padding: 1.5rem; background: rgba(0,0,0,0.35); }',
-        '.lr-qr-overlay[hidden] { display: none; }',
-        '.lr-qr-modal { position: relative; width: min(100%, 20rem); padding: 1.5rem 1.25rem 1.25rem; background: #fffef9; border: 1px solid #ddd; border-radius: 6px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }',
-        '.lr-qr-close { position: absolute; top: 0.5rem; right: 0.65rem; background: none; border: none; font-size: 1.25rem; line-height: 1; color: #bbb; cursor: pointer; padding: 0; }',
-        '.lr-qr-close:hover { color: #666; }',
-        '.lr-qr-title { margin: 0 0 1rem; font-size: 0.78rem; font-weight: normal; color: #666; letter-spacing: 0.06em; text-transform: uppercase; }',
-        '.lr-qr-img { display: block; margin: 0 auto; border: 1px solid #eee; border-radius: 4px; background: #fff; }',
-        '.lr-qr-url { margin: 0.85rem 0 0; font-size: 0.72rem; color: #999; word-break: break-all; line-height: 1.35; }'
+        '.export-header { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 1.5rem; border-bottom: 1px dotted #ccc; padding-bottom: 0.5rem; flex-shrink: 0; }',
+        '.export-header .export-title { margin: 0; border-bottom: none; padding-bottom: 0; flex: 0 1 auto; min-width: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 0.72rem; letter-spacing: 0.04em; }',
+        '.lr-qr-img { flex-shrink: 0; display: block; width: 64px; height: 64px; border: none; border-radius: 0; background: #fff; }'
       ].join('\n');
 
-      const qrButton = '<button type="button" class="lr-qr-btn" id="lr-qr-btn" aria-label="Show QR code">QR code</button>';
+      const qrImg = '<img class="lr-qr-img" id="lr-qr-img" alt="QR code for this page" width="64" height="64">';
       const withHeader = html.replace(
         /(<h1 class="export-title">[\s\S]*?<\/h1>)/,
-        '<div class="export-header">$1' + qrButton + '</div>'
+        '<div class="export-header">$1' + qrImg + '</div>'
       );
-
-      const shareMarkup =
-        '<div class="lr-qr-overlay" id="lr-qr-overlay" hidden>' +
-        '<div class="lr-qr-modal" role="dialog" aria-modal="true" aria-labelledby="lr-qr-title">' +
-        '<button type="button" class="lr-qr-close" id="lr-qr-close" aria-label="Close">&times;</button>' +
-        '<h2 class="lr-qr-title" id="lr-qr-title">Scan to open</h2>' +
-        '<img class="lr-qr-img" id="lr-qr-img" alt="QR code for this page" width="240" height="240">' +
-        '<p class="lr-qr-url" id="lr-qr-url"></p>' +
-        '</div></div>';
 
       const shareScript =
         '<script>(function(){' +
-        'var btn=document.getElementById("lr-qr-btn");' +
-        'var overlay=document.getElementById("lr-qr-overlay");' +
         'var img=document.getElementById("lr-qr-img");' +
-        'var urlEl=document.getElementById("lr-qr-url");' +
-        'var closeBtn=document.getElementById("lr-qr-close");' +
-        'if(!btn||!overlay||!img)return;' +
-        'function openQr(){var u=location.href;urlEl.textContent=u;' +
-        'img.src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data="+encodeURIComponent(u);overlay.hidden=false;}' +
-        'function closeQr(){overlay.hidden=true;}' +
-        'btn.addEventListener("click",openQr);' +
-        'closeBtn.addEventListener("click",closeQr);' +
-        'overlay.addEventListener("click",function(e){if(e.target===overlay)closeQr();});' +
-        'document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!overlay.hidden)closeQr();});' +
+        'if(!img)return;' +
+        'img.src="https://api.qrserver.com/v1/create-qr-code/?size=128x128&margin=4&data="+encodeURIComponent(location.href);' +
         '})();<\/script>';
 
-      const injection = '<style>\n' + shareStyles + '\n</style>\n' + shareMarkup + '\n' + shareScript;
+      const injection = '<style>\n' + shareStyles + '\n</style>\n' + shareScript;
       return withHeader.replace('</body>', injection + '\n</body>');
     }
 
@@ -3079,6 +3116,7 @@
         session.publishedType = data.type || type;
         saveData();
         analyticsTrack(analyticsPrefix + ' Published');
+        updatePublishCopyButtons();
         showPublishModal(data.url, type);
       } catch (err) {
         alert('Could not publish: ' + err.message);
